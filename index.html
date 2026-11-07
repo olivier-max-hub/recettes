@@ -70,7 +70,7 @@ footer .cm{font-size:1rem;color:var(--ink);max-width:560px;margin:8px auto 16px;
 .chef svg{width:44px;height:44px;flex:none}
 .chef:focus-visible{outline-color:#fff}
 .chef[hidden]{display:none}
-.chef-f{display:flex;position:fixed;top:auto;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;font-size:1rem;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:grab;border:2px solid var(--acc);box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.chef-f{display:flex;position:fixed;top:auto;right:12px;bottom:calc(var(--bar) + 16px + env(safe-area-inset-bottom,0px));z-index:15;font-size:1rem;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:grab;border:2px solid var(--acc);box-shadow:0 3px 8px rgba(0,0,0,.35)}
 .chef-f svg{width:38px;height:38px}
 .chef-f:focus-visible{outline-color:var(--acc)}
 @media (min-width:700px){.chef{display:flex}.chef-f{display:none}.chef[hidden]{display:none}}
@@ -85,7 +85,12 @@ header .wrap{position:relative}
 .backbar{display:flex;align-items:center;gap:12px;margin:0 0 14px}
 .backbar b{font-size:1.6rem;color:var(--ink)}
 @media (max-width:699px){#chips{display:none}}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
+:root{--bar:34px}
+body{padding-bottom:var(--bar)}
+#sharebar{position:fixed;left:0;right:0;bottom:0;z-index:12;height:calc(var(--bar) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:center;background:var(--acc);box-shadow:0 -2px 10px rgba(0,0,0,.15)}
+#sharebar a{color:#fff;font-weight:700;font-size:1.1rem;line-height:1;text-align:center;text-decoration:underline;text-underline-offset:3px;padding:6px 24px}
+#sharebar a:focus-visible{outline-color:#fff}
+#toast{position:fixed;left:50%;bottom:calc(var(--bar) + 20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
 </style>
 </head>
@@ -100,6 +105,7 @@ header .wrap{position:relative}
 <main><div class="wrap" id="list"></div></main>
 <footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail et ton message sont enregistrés uniquement pour te répondre. Ils ne sont ni affichés sur le site ni partagés avec d’autres personnes, et tu peux demander leur suppression à tout moment en me contactant.</p></footer>
 <div id="detail" role="dialog" aria-modal="true" aria-label="Détail de la recette"><div class="sheetwrap"><button class="close" id="x" aria-label="Fermer">×</button><div class="sheet" id="sheet"></div></div></div>
+<div id="sharebar"><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
 <script>
@@ -197,6 +203,9 @@ function route(){var h=decodeURIComponent(location.hash.slice(1));
 window.addEventListener("hashchange",route);
 (function(){var mq=window.matchMedia&&matchMedia("(max-width:699px)");if(!mq)return;var f=function(){renderChips();renderList()};if(mq.addEventListener)mq.addEventListener("change",f);else if(mq.addListener)mq.addListener(f)})();
 $("q").addEventListener("input",function(e){query=e.target.value;renderList()});
+$("shareLink").addEventListener("click",function(e){e.preventDefault();var url=location.origin+location.pathname;
+  var fb=function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(function(){toast("Lien du site copié")},function(){toast("Partage indisponible")});else toast("Partage indisponible")};
+  if(navigator.share)navigator.share({title:"Mes recettes",text:"Mes recettes",url:url}).catch(function(x){if(!x||x.name!=="AbortError")fb()});else fb()});
 
 function setup(){var p=document.createElement("div");p.className="msg";
   p.innerHTML="<b>Dernière étape :</b> dans ta feuille Google Sheets, va dans <i>Fichier, Partager, Publier sur le Web</i>, choisis l’onglet « Liste de recettes » et le format « Valeurs séparées par des virgules (.csv) », puis clique sur Publier. Colle le lien obtenu dans <code>CSV_URL</code> au début du script de ce fichier.";
@@ -214,7 +223,7 @@ function goComment(ev){ev.preventDefault();if(current)closeDetail();var f=$("com
   f.scrollIntoView({behavior:calm?"auto":"smooth",block:"center"});
   if(window.matchMedia&&matchMedia("(min-width:700px)").matches)setTimeout(function(){var i=f.querySelector("input");if(i)i.focus({preventScroll:true})},500)}
 function setupFab(t){var pos=null,drag=false,id=null,sx=0,sy=0,ox=0,oy=0;
-  function place(x,y){var w=t.offsetWidth,h=t.offsetHeight;x=Math.min(Math.max(4,x),innerWidth-w-4);y=Math.min(Math.max(4,y),innerHeight-h-4);t.style.left=x+"px";t.style.top=y+"px";t.style.right="auto";t.style.bottom="auto"}
+  function place(x,y){var w=t.offsetWidth,h=t.offsetHeight;x=Math.min(Math.max(4,x),innerWidth-w-4);y=Math.min(Math.max(4,y),innerHeight-h-4-$("sharebar").offsetHeight);t.style.left=x+"px";t.style.top=y+"px";t.style.right="auto";t.style.bottom="auto"}
   try{pos=JSON.parse(localStorage.getItem("recettes-fab"))}catch(e){}
   if(pos&&pos.length===2)place(pos[0],pos[1]);
   t.addEventListener("pointerdown",function(e){id=e.pointerId;try{t.setPointerCapture(id)}catch(x){}var r=t.getBoundingClientRect();sx=e.clientX;sy=e.clientY;ox=r.left;oy=r.top;drag=false});
