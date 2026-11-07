@@ -29,7 +29,8 @@ main{padding:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
 .card{background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.1);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit}
 .card:focus-visible,.chip:focus-visible,button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-.thumb{aspect-ratio:4/3;display:grid;place-items:center;font-size:2.8rem}
+.thumb{aspect-ratio:4/3;display:grid;place-items:center;font-size:2.8rem;position:relative;overflow:hidden}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .card .t{padding:10px 12px 12px}
 @media (prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
 .card b{display:block;font:600 .98rem/1.25 Georgia,serif}
@@ -75,11 +76,14 @@ function slug(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowe
 function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return h}
 var ICONS=[[/burger/,"🍔"],[/cake|gâteau|tarte|crumble|brownie|cookie|mousse|flan sucr|dessert/,"🍰"],[/salade|coleslaw|crudit/,"🥗"],[/houmous|tahini|caviar|tartinade|rillette|crème de|velouté|soupe/,"🥣"],[/poisson|sardine|saumon|thon|crevette/,"🐟"],[/poulet|volaille|canard|dinde/,"🍗"],[/boeuf|bœuf|porc|veau|agneau|steak|bacon|lardon|foie|pâté|viande/,"🥩"],[/pâtes|lasagne|nouille|riz|risotto/,"🍝"],[/cracker|flûte|feuillet|pain|brioche/,"🥖"],[/fromage|feta|chèvre|roquefort/,"🧀"],[/butternut|courge|légume|aubergine|radis|endive|lentille/,"🥕"]];
 function icon(r){var s=(r.name+" "+r.cat+" "+r.type).toLowerCase();for(var i=0;i<ICONS.length;i++)if(ICONS[i][0].test(s))return ICONS[i][1];return r.cat==="Apéritif"?"🥂":"🍽️"}
-function thumb(r){var d=document.createElement("div");d.className="thumb";var h=hue(r.cat||r.name);d.style.background="linear-gradient(135deg,hsl("+h+" 45% 82%),hsl("+((h+40)%360)+" 50% 70%))";d.textContent=icon(r);d.setAttribute("aria-hidden","true");return d}
+function thumb(r){var d=document.createElement("div");d.className="thumb";var h=hue(r.cat||r.name);d.style.background="linear-gradient(135deg,hsl("+h+" 45% 82%),hsl("+((h+40)%360)+" 50% 70%))";d.textContent=icon(r);d.setAttribute("aria-hidden","true");
+  var u=imgUrl(r.img);if(u){var i=document.createElement("img");i.alt="";i.loading="lazy";i.referrerPolicy="no-referrer";i.onerror=function(){i.remove()};i.src=u;d.appendChild(i)}
+  return d}
+function imgUrl(u){if(!u)return"";var m=u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);return m?"https://drive.google.com/thumbnail?id="+m[1]+"&sz=w800":u}
 function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2400)}
 
 function csv(t){var rows=[],r=[],f="",q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==","){r.push(f);f=""}else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";rows.push(r);r=[]}else f+=c}if(f!==""||r.length){r.push(f);rows.push(r)}return rows}
-function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;out.push({cat:c,name:name,type:(row[3]||"").trim(),region:(row[4]||"").trim(),link:(row[5]||"").trim(),slug:slug(name)})});return out}
+function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;out.push({cat:c,name:name,type:(row[3]||"").trim(),region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:(row[6]||"").trim(),slug:slug(name)})});return out}
 
 function renderChips(){var cats=["Tout"];recipes.forEach(function(r){if(r.cat&&cats.indexOf(r.cat)<0)cats.push(r.cat)});if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
   cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){cat=c;renderChips();renderList()};box.appendChild(b)})}
