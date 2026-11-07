@@ -66,6 +66,14 @@ iframe{width:100%;height:65vh;border:1px solid var(--line);border-radius:10px;ba
 footer{padding:8px 16px 28px;color:var(--mute);font-size:.8rem}
 footer p{max-width:70ch;margin:0 auto;text-align:center}
 footer .cm{font-size:1rem;color:var(--ink);max-width:560px;margin:8px auto 16px;text-align:left}
+.toque{align-items:center;justify-items:center;padding:0 0 22% 0;text-align:center;line-height:1.05;font-weight:700;color:var(--acc);text-decoration:none;white-space:nowrap;aspect-ratio:200/150;background:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20150'%3E%3Cpath%20d='M45%20112C15%20112%205%2078%2030%2065C22%2040%2050%2020%2075%2033C85%208%20125%208%20135%2033C160%2020%20188%2042%20170%2065C195%2078%20185%20112%20155%20112Z'%20fill='white'%20stroke='%230f6b78'%20stroke-width='5'%20stroke-linejoin='round'/%3E%3Cpath%20d='M45%20112h110v26q0%208-8%208h-94q-8%200-8-8Z'%20fill='%23d9f0f3'%20stroke='%230f6b78'%20stroke-width='5'%20stroke-linejoin='round'/%3E%3C/svg%3E") center/100% 100% no-repeat;-webkit-tap-highlight-color:transparent}
+.toque-h{display:none;position:absolute;right:0;top:-10px;width:108px;font-size:.95rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.toque-f{display:grid;position:fixed;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:104px;font-size:.85rem;z-index:15;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:grab;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))}
+.toque-f:focus-visible{outline-color:var(--acc)}
+@media (min-width:700px){.toque-h{display:grid}.toque-f{display:none}}
+.toque[hidden]{display:none}
+header .wrap{position:relative}
+#commentaire{scroll-margin-top:100px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
 </style>
@@ -76,10 +84,12 @@ footer .cm{font-size:1rem;color:var(--ink);max-width:560px;margin:8px auto 16px;
 <p class="sub" id="status">Chargement…</p>
 <input type="search" id="q" placeholder="Rechercher une recette" aria-label="Rechercher une recette">
 <div class="chips" id="chips"></div>
+<a class="toque toque-h" id="toqueH" href="#commentaire" hidden><span>Laisser un commentaire</span></a>
 </div></header>
 <main><div class="wrap" id="list"></div></main>
 <footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail et ton message sont enregistrés uniquement pour te répondre. Ils ne sont ni affichés sur le site ni partagés avec d’autres personnes, et tu peux demander leur suppression à tout moment en me contactant.</p></footer>
 <div id="detail" role="dialog" aria-modal="true" aria-label="Détail de la recette"><div class="sheetwrap"><button class="close" id="x" aria-label="Fermer">×</button><div class="sheet" id="sheet"></div></div></div>
+<a class="toque toque-f" id="toqueF" href="#commentaire" draggable="false" hidden><span>commentaire</span></a>
 <div id="toast" role="status"></div>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
@@ -167,7 +177,22 @@ function load(){
     show(csv(t),", à jour à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))
   }).catch(function(){var t=null;try{t=localStorage.getItem("recettes-csv")}catch(e){}
     if(t)show(csv(t),", hors connexion");else{$("list").textContent="";var p=document.createElement("p");p.className="msg";p.textContent="La liste n’a pas pu être chargée. Vérifie la connexion puis recharge la page.";$("list").appendChild(p);$("status").textContent="Liste indisponible"}})}
-if(COMMENT_URL){var lg=$("legal");lg.insertBefore(commentBox({name:"Commentaire général"}),lg.firstChild);lg.hidden=false}
+function goComment(ev){ev.preventDefault();if(current)closeDetail();var f=$("commentaire");if(!f)return;
+  var calm=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+  f.scrollIntoView({behavior:calm?"auto":"smooth",block:"center"});
+  if(window.matchMedia&&matchMedia("(min-width:700px)").matches)setTimeout(function(){var i=f.querySelector("input");if(i)i.focus({preventScroll:true})},500)}
+function setupFab(t){var pos=null,drag=false,id=null,sx=0,sy=0,ox=0,oy=0;
+  function place(x,y){var w=t.offsetWidth,h=t.offsetHeight;x=Math.min(Math.max(4,x),innerWidth-w-4);y=Math.min(Math.max(4,y),innerHeight-h-4);t.style.left=x+"px";t.style.top=y+"px";t.style.right="auto";t.style.bottom="auto"}
+  try{pos=JSON.parse(localStorage.getItem("recettes-fab"))}catch(e){}
+  if(pos&&pos.length===2)place(pos[0],pos[1]);
+  t.addEventListener("pointerdown",function(e){id=e.pointerId;try{t.setPointerCapture(id)}catch(x){}var r=t.getBoundingClientRect();sx=e.clientX;sy=e.clientY;ox=r.left;oy=r.top;drag=false});
+  t.addEventListener("pointermove",function(e){if(e.pointerId!==id)return;var dx=e.clientX-sx,dy=e.clientY-sy;if(!drag&&Math.abs(dx)+Math.abs(dy)<8)return;drag=true;place(ox+dx,oy+dy)});
+  var end=function(e){if(e.pointerId!==id)return;id=null;if(drag){var r=t.getBoundingClientRect();try{localStorage.setItem("recettes-fab",JSON.stringify([r.left,r.top]))}catch(x){}setTimeout(function(){drag=false},0)}};
+  t.addEventListener("pointerup",end);t.addEventListener("pointercancel",end);
+  t.addEventListener("click",function(e){if(drag){e.preventDefault();return}goComment(e)});
+  addEventListener("resize",function(){if(t.style.left)place(parseFloat(t.style.left),parseFloat(t.style.top))})}
+if(COMMENT_URL){var lg=$("legal"),fm=commentBox({name:"Commentaire général"});fm.id="commentaire";lg.insertBefore(fm,lg.firstChild);lg.hidden=false;
+  var th=$("toqueH"),tf=$("toqueF");th.hidden=false;tf.hidden=false;th.addEventListener("click",goComment);setupFab(tf)}
 load();setInterval(load,120000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
 if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
