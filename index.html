@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mes recettes</title>
-<meta name="theme-color" content="#eef8fb">
+<meta name="theme-color" content="#0f6b78">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,15 +16,16 @@
 *,*::before,*::after{box-sizing:border-box}
 html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--deco) 0 0/260px 260px fixed,linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)) fixed,var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--g1);z-index:10}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--hdr);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--acc);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--acc);color:#fff;padding:14px 16px 10px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 .wrap{max-width:1100px;margin:0 auto}
-h1{margin:0;font:700 1.9rem/1.1 Georgia,"Times New Roman",serif}
-.sub{color:var(--mute);font-size:.85rem;margin:2px 0 10px}
+h1{margin:0;color:#fff;font:700 1.9rem/1.1 Georgia,"Times New Roman",serif}
+.sub{color:rgba(255,255,255,.88);font-size:.85rem;margin:2px 0 10px}
 input[type=search]{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px}
-.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 14px;border-radius:99px;font:inherit;font-size:.9rem;cursor:pointer}
-.chip[aria-pressed=true]{background:var(--acc);color:var(--on);border-color:var(--acc)}
+.chip{flex:none;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;padding:6px 14px;border-radius:99px;font:inherit;font-size:.9rem;cursor:pointer}
+.chip[aria-pressed=true]{background:#e3f6f8;color:#0b4f59;border-color:#e3f6f8;font-weight:600}
+header .chip:focus-visible,header input:focus-visible{outline-color:#fff}
 main{padding:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
 .card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.1);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit}
