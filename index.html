@@ -107,7 +107,7 @@ header .wrap{position:relative}
 var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
 
 /* Colle ici l’adresse (se terminant par /exec) de ton script Google Apps Script qui reçoit les commentaires. Vide = formulaire masqué. */
-var COMMENT_URL="https://script.google.com/macros/s/AKfycbwwrlvbaAkPAm3h6QnLAPqwb2GMyu3gXmJxZfDq6kz15HiR-NgAdBmrYNexRzBpHMuR/exec";
+var COMMENT_URL="https://script.google.com/macros/s/AKfycbziHIdVkqXG_zVHB9_NZ1TnZlt2RoneqWL1JRqambljlUHGbO2pBuutN1DU5qUwGqh2/exec";
 
 var recipes=[],cat="Tout",query="",current=null;
 var $=function(i){return document.getElementById(i)};
@@ -166,7 +166,7 @@ function commentBox(r){var w=document.createElement("form");w.className="cm";
     var last=0;try{last=+localStorage.getItem("recettes-cm")||0}catch(x){}
     if(Date.now()-last<30000){s.textContent="Patiente quelques secondes avant d’envoyer un autre message.";return}
     b.disabled=true;s.textContent="Envoi…";
-    var body=new URLSearchParams({recipe:r.name,email:e.value.trim(),comment:t.value.trim()});
+    var body=new URLSearchParams({recipe:r.name,email:e.value.trim(),comment:t.value.trim(),device:deviceType()});
     fetch(COMMENT_URL,{method:"POST",mode:"no-cors",body:body}).then(function(){try{localStorage.setItem("recettes-cm",String(Date.now()))}catch(x){}t.value="";s.textContent="Merci, ton commentaire a été envoyé.";b.disabled=false}).catch(function(){s.textContent="L’envoi a échoué. Réessaie dans un instant.";b.disabled=false})};
   return w}
 function closeDetail(){$("detail").classList.remove("open");current=null;var keep=isMobile()&&cat!=="Tout"?"#categorie-"+slug(cat):"";if(location.hash!==keep)history.replaceState(null,"",location.pathname+location.search+keep)}
@@ -175,6 +175,7 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape"&&current)clo
 function share(r){var url=location.origin+location.pathname+"#"+r.slug,text=r.name+" ("+[r.cat,r.type,r.region].filter(Boolean).join(", ")+")";
   var fb=function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text+"\n"+url).then(function(){toast("Lien copié")},function(){toast("Partage indisponible")});else toast("Partage indisponible")};
   if(navigator.share)navigator.share({title:r.name,text:text,url:url}).catch(function(e){if(!e||e.name!=="AbortError")fb()});else fb()}
+function deviceType(){var ua=navigator.userAgent||"";return(/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)||isMobile())?"Mobile":"PC"}
 function isMobile(){return!!(window.matchMedia&&matchMedia("(max-width:699px)").matches)}
 var PAL=[["#bfe8ee","#8fd3dd"],["#ffd9c7","#ffb899"],["#d9d0f5","#b9a8ee"],["#fff1b8","#f8d96b"],["#cdeccb","#9fd89a"],["#ffd0e0","#f6a6c3"],["#c9e1fb","#9cc6f2"],["#ffe0b3","#fbc16b"],["#d6f0e6","#8fd6bd"],["#e9d6f2","#d0a9e6"]];
 function catIcon(c){var k=slug(c);if(/apero/.test(k))return"🥂";if(/entree/.test(k))return"🥗";if(/vegetarien/.test(k))return"🥦";if(/plat-unique/.test(k))return"🥘";if(/^plat/.test(k))return"🍲";if(/accompagn/.test(k))return"🍟";if(/salee/.test(k))return"🧂";if(/dessert/.test(k))return"🍰";if(/sucree/.test(k))return"🍯";if(/biscuit/.test(k))return"🍪";return"🍽️"}
