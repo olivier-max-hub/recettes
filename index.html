@@ -59,6 +59,8 @@ h2{font:600 1.15rem Georgia,serif;margin:22px 0 10px;display:inline-block;paddin
 iframe{width:100%;height:65vh;border:1px solid var(--line);border-radius:10px;background:#fff}
 .close{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top,0px));width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font-size:1.3rem;cursor:pointer;z-index:2}
 @media (min-width:700px){#detail{padding:24px}.sheetwrap{height:auto;max-height:100%;width:auto}.sheet{width:min(1000px,calc(100vw - 48px));height:auto;max-height:calc(100vh - 48px);border-radius:16px}.sheet .thumb{aspect-ratio:16/3.5}iframe{height:min(70vh,820px)}.close{top:12px}}
+footer{padding:8px 16px 28px;color:var(--mute);font-size:.8rem}
+footer p{max-width:70ch;margin:0 auto;text-align:center}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
 </style>
@@ -71,6 +73,7 @@ iframe{width:100%;height:65vh;border:1px solid var(--line);border-radius:10px;ba
 <div class="chips" id="chips"></div>
 </div></header>
 <main><div class="wrap" id="list"></div></main>
+<footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail et ton message sont enregistrés uniquement pour te répondre. Ils ne sont ni affichés sur le site ni partagés avec d’autres personnes, et tu peux demander leur suppression à tout moment en me contactant.</p></footer>
 <div id="detail" role="dialog" aria-modal="true" aria-label="Détail de la recette"><div class="sheetwrap"><button class="close" id="x" aria-label="Fermer">×</button><div class="sheet" id="sheet"></div></div></div>
 <div id="toast" role="status"></div>
 <script>
@@ -160,6 +163,7 @@ function load(){
     show(csv(t),", à jour à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))
   }).catch(function(){var t=null;try{t=localStorage.getItem("recettes-csv")}catch(e){}
     if(t)show(csv(t),", hors connexion");else{$("list").textContent="";var p=document.createElement("p");p.className="msg";p.textContent="La liste n’a pas pu être chargée. Vérifie la connexion puis recharge la page.";$("list").appendChild(p);$("status").textContent="Liste indisponible"}})}
+if(COMMENT_URL)$("legal").hidden=false;
 load();setInterval(load,120000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
 if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
