@@ -49,6 +49,13 @@ h2{font:600 1.15rem Georgia,serif;margin:22px 0 10px;display:inline-block;paddin
 .body h3{margin:0 0 4px;font:700 1.6rem/1.15 Georgia,serif}
 .meta{color:var(--mute);margin:0 0 16px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.cm{margin-top:18px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;display:grid;gap:10px}
+.cm h4{margin:0;font:600 1.1rem Georgia,serif}
+.cm input,.cm textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+.cm .btn{justify-self:start}
+.cm .btn:disabled{opacity:.6;cursor:default}
+.note{margin:0;color:var(--mute);font-size:.85rem}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 iframe{width:100%;height:65vh;border:1px solid var(--line);border-radius:10px;background:#fff}
 .close{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top,0px));width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font-size:1.3rem;cursor:pointer;z-index:2}
 @media (min-width:700px){#detail{padding:24px}.sheetwrap{height:auto;max-height:100%;width:auto}.sheet{width:min(1000px,calc(100vw - 48px));height:auto;max-height:calc(100vh - 48px);border-radius:16px}.sheet .thumb{aspect-ratio:16/3.5}iframe{height:min(70vh,820px)}.close{top:12px}}
@@ -69,6 +76,9 @@ iframe{width:100%;height:65vh;border:1px solid var(--line);border-radius:10px;ba
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
 var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
+
+/* Colle ici l’adresse (se terminant par /exec) de ton script Google Apps Script qui reçoit les commentaires. Vide = formulaire masqué. */
+var COMMENT_URL="";
 
 var recipes=[],cat="Tout",query="",current=null;
 var $=function(i){return document.getElementById(i)};
@@ -110,7 +120,24 @@ function openDetail(r){current=r;var s=$("sheet");s.textContent="";s.appendChild
   if(id){var o=document.createElement("a");o.className="btn alt";o.target="_blank";o.rel="noopener";o.href=r.link;o.textContent="Ouvrir le document";a.appendChild(o);
     var f=document.createElement("iframe");f.src="https://docs.google.com/document/d/"+id+"/preview";f.title=r.name;f.loading="lazy";b.appendChild(f)}
   else{var p=document.createElement("p");p.className="meta";p.textContent="Cette recette n’a pas encore de document associé.";b.appendChild(p)}
+  if(COMMENT_URL)b.appendChild(commentBox(r));
   s.appendChild(b);$("detail").classList.add("open");$("x").focus()}
+function commentBox(r){var w=document.createElement("form");w.className="cm";
+  var h=document.createElement("h4");h.textContent="Laisser un commentaire";
+  var e=document.createElement("input");e.type="email";e.required=true;e.maxLength=200;e.autocomplete="email";e.placeholder="Ton adresse e-mail";e.setAttribute("aria-label","Adresse e-mail");
+  var t=document.createElement("textarea");t.required=true;t.rows=4;t.maxLength=1000;t.placeholder="Ton commentaire";t.setAttribute("aria-label","Commentaire");
+  var hp=document.createElement("input");hp.type="text";hp.tabIndex=-1;hp.autocomplete="off";hp.className="hp";hp.setAttribute("aria-hidden","true");
+  var n=document.createElement("p");n.className="note";n.textContent="Ton commentaire et ton adresse restent privés : aucun autre visiteur ne les voit, et ils ne servent qu’à te répondre.";
+  var b=document.createElement("button");b.className="btn";b.type="submit";b.textContent="Envoyer";
+  var s=document.createElement("p");s.className="note";s.setAttribute("role","status");
+  [h,e,t,hp,n,b,s].forEach(function(x){w.appendChild(x)});
+  w.onsubmit=function(ev){ev.preventDefault();if(hp.value)return;
+    var last=0;try{last=+localStorage.getItem("recettes-cm")||0}catch(x){}
+    if(Date.now()-last<30000){s.textContent="Patiente quelques secondes avant d’envoyer un autre message.";return}
+    b.disabled=true;s.textContent="Envoi…";
+    var body=new URLSearchParams({recipe:r.name,email:e.value.trim(),comment:t.value.trim()});
+    fetch(COMMENT_URL,{method:"POST",mode:"no-cors",body:body}).then(function(){try{localStorage.setItem("recettes-cm",String(Date.now()))}catch(x){}t.value="";s.textContent="Merci, ton commentaire a été envoyé.";b.disabled=false}).catch(function(){s.textContent="L’envoi a échoué. Réessaie dans un instant.";b.disabled=false})};
+  return w}
 function closeDetail(){$("detail").classList.remove("open");current=null;if(location.hash)history.replaceState(null,"",location.pathname+location.search)}
 $("x").onclick=closeDetail;$("detail").onclick=function(e){if(e.target===$("detail"))closeDetail()};
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&current)closeDetail()});
