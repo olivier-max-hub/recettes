@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes recettes</title>
+<meta name="theme-color" content="#eef8fb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Recettes">
+<style>
+:root{--bg:#eef8fb;--g1:#f1fafc;--g2:#e6f6f7;--g3:#eaf5fb;--hdr:rgba(240,250,252,.88);--card:#fff;--ink:#1f2a24;--mute:#5d6f73;--line:#d3e6ea;--acc:#0f6b78;--on:#fff;color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)) fixed,var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--g1);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--hdr);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.wrap{max-width:1100px;margin:0 auto}
+h1{margin:0;font:700 1.9rem/1.1 Georgia,"Times New Roman",serif}
+.sub{color:var(--mute);font-size:.85rem;margin:2px 0 10px}
+input[type=search]{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 14px;border-radius:99px;font:inherit;font-size:.9rem;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc);color:var(--on);border-color:var(--acc)}
+main{padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.1);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;padding:0;color:inherit;font:inherit}
+.card:focus-visible,.chip:focus-visible,button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.thumb{aspect-ratio:4/3;display:grid;place-items:center;font-size:2.8rem}
+.card .t{padding:10px 12px 12px}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
+.card b{display:block;font:600 .98rem/1.25 Georgia,serif}
+.card small{color:var(--mute)}
+h2{font:600 1.15rem Georgia,serif;margin:22px 0 10px;display:inline-block;padding:4px 14px;border-left:6px solid var(--cat,var(--acc));border-radius:6px;background:var(--card)}
+.msg{padding:24px 8px;color:var(--mute);max-width:60ch;margin:0 auto}
+.msg code{background:var(--card);padding:1px 6px;border-radius:5px;word-break:break-all}
+.btn{border:1px solid var(--acc);background:var(--acc);color:var(--on);padding:9px 16px;border-radius:10px;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.alt{background:transparent;color:var(--acc)}
+#detail{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
+#detail.open{display:flex}
+.sheetwrap{position:relative;width:100%;height:100%;display:flex;justify-content:center}
+.sheet{background:linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3)),var(--bg);width:100%;height:100%;overflow:auto;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.sheet .thumb{aspect-ratio:16/6;font-size:4rem}
+.body{padding:18px 20px 24px}
+.body h3{margin:0 0 4px;font:700 1.6rem/1.15 Georgia,serif}
+.meta{color:var(--mute);margin:0 0 16px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+iframe{width:100%;height:65vh;border:1px solid var(--line);border-radius:10px;background:#fff}
+.close{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top,0px));width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font-size:1.3rem;cursor:pointer;z-index:2}
+@media (min-width:700px){#detail{padding:24px}.sheetwrap{height:auto;max-height:100%;width:auto}.sheet{max-width:720px;height:auto;max-height:100%;border-radius:16px}.close{top:12px}}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Mes recettes</h1>
+<p class="sub" id="status">Chargement…</p>
+<input type="search" id="q" placeholder="Rechercher une recette" aria-label="Rechercher une recette">
+<div class="chips" id="chips"></div>
+</div></header>
+<main><div class="wrap" id="list"></div></main>
+<div id="detail" role="dialog" aria-modal="true" aria-label="Détail de la recette"><div class="sheetwrap"><button class="close" id="x" aria-label="Fermer">×</button><div class="sheet" id="sheet"></div></div></div>
+<div id="toast" role="status"></div>
+<script>
+/* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
+var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
+
+var recipes=[],cat="Tout",query="",current=null;
+var $=function(i){return document.getElementById(i)};
+function slug(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;return h}
+var ICONS=[[/burger/,"🍔"],[/cake|gâteau|tarte|crumble|brownie|cookie|mousse|flan sucr|dessert/,"🍰"],[/salade|coleslaw|crudit/,"🥗"],[/houmous|tahini|caviar|tartinade|rillette|crème de|velouté|soupe/,"🥣"],[/poisson|sardine|saumon|thon|crevette/,"🐟"],[/poulet|volaille|canard|dinde/,"🍗"],[/boeuf|bœuf|porc|veau|agneau|steak|bacon|lardon|foie|pâté|viande/,"🥩"],[/pâtes|lasagne|nouille|riz|risotto/,"🍝"],[/cracker|flûte|feuillet|pain|brioche/,"🥖"],[/fromage|feta|chèvre|roquefort/,"🧀"],[/butternut|courge|légume|aubergine|radis|endive|lentille/,"🥕"]];
+function icon(r){var s=(r.name+" "+r.cat+" "+r.type).toLowerCase();for(var i=0;i<ICONS.length;i++)if(ICONS[i][0].test(s))return ICONS[i][1];return r.cat==="Apéritif"?"🥂":"🍽️"}
+function thumb(r){var d=document.createElement("div");d.className="thumb";var h=hue(r.cat||r.name);d.style.background="linear-gradient(135deg,hsl("+h+" 45% 82%),hsl("+((h+40)%360)+" 50% 70%))";d.textContent=icon(r);d.setAttribute("aria-hidden","true");return d}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2400)}
+
+function csv(t){var rows=[],r=[],f="",q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==","){r.push(f);f=""}else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";rows.push(r);r=[]}else f+=c}if(f!==""||r.length){r.push(f);rows.push(r)}return rows}
+function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;out.push({cat:c,name:name,type:(row[3]||"").trim(),region:(row[4]||"").trim(),link:(row[5]||"").trim(),slug:slug(name)})});return out}
+
+function renderChips(){var cats=["Tout"];recipes.forEach(function(r){if(r.cat&&cats.indexOf(r.cat)<0)cats.push(r.cat)});if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
+  cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){cat=c;renderChips();renderList()};box.appendChild(b)})}
+function renderList(){var box=$("list");box.textContent="";var q=slug(query).replace(/-/g," ");
+  var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||slug(r.name+" "+r.type+" "+r.region).replace(/-/g," ").indexOf(q)>=0)});
+  if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent="Aucune recette ne correspond.";box.appendChild(p);return}
+  var groups={},order=[];items.forEach(function(r){if(!groups[r.cat]){groups[r.cat]=[];order.push(r.cat)}groups[r.cat].push(r)});
+  order.forEach(function(c){
+    if(cat==="Tout"&&order.length>1){var h=document.createElement("h2");h.textContent=c||"Autres";h.style.setProperty("--cat","hsl("+hue(c||"")+" 65% 50%)");box.appendChild(h)}
+    var g=document.createElement("div");g.className="grid";
+    groups[c].forEach(function(r){var b=document.createElement("button");b.className="card";b.style.borderTop="4px solid hsl("+hue(r.cat||r.name)+" 65% 55%)";b.appendChild(thumb(r));
+      var t=document.createElement("div");t.className="t";var n=document.createElement("b");n.textContent=r.name;var s=document.createElement("small");s.textContent=[r.type,r.region].filter(Boolean).join(", ");t.appendChild(n);t.appendChild(s);b.appendChild(t);
+      b.onclick=function(){location.hash=r.slug};g.appendChild(b)});
+    box.appendChild(g)})}
+
+function openDetail(r){current=r;var s=$("sheet");s.textContent="";s.appendChild(thumb(r));
+  var b=document.createElement("div");b.className="body";
+  var h=document.createElement("h3");h.textContent=r.name;
+  var m=document.createElement("p");m.className="meta";m.textContent=[r.cat,r.type,r.region].filter(Boolean).join(", ");
+  var a=document.createElement("div");a.className="actions";
+  var sh=document.createElement("button");sh.className="btn";sh.textContent="Partager";sh.onclick=function(){share(r)};a.appendChild(sh);
+  var id=(r.link.match(/\/d\/([\w-]+)/)||[])[1];
+  b.appendChild(h);b.appendChild(m);b.appendChild(a);
+  if(id){var o=document.createElement("a");o.className="btn alt";o.target="_blank";o.rel="noopener";o.href=r.link;o.textContent="Ouvrir le document";a.appendChild(o);
+    var f=document.createElement("iframe");f.src="https://docs.google.com/document/d/"+id+"/preview";f.title=r.name;f.loading="lazy";b.appendChild(f)}
+  else{var p=document.createElement("p");p.className="meta";p.textContent="Cette recette n’a pas encore de document associé.";b.appendChild(p)}
+  s.appendChild(b);$("detail").classList.add("open");$("x").focus()}
+function closeDetail(){$("detail").classList.remove("open");current=null;if(location.hash)history.replaceState(null,"",location.pathname+location.search)}
+$("x").onclick=closeDetail;$("detail").onclick=function(e){if(e.target===$("detail"))closeDetail()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&current)closeDetail()});
+function share(r){var url=location.origin+location.pathname+"#"+r.slug,text=r.name+" ("+[r.cat,r.type,r.region].filter(Boolean).join(", ")+")";
+  var fb=function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text+"\n"+url).then(function(){toast("Lien copié")},function(){toast("Partage indisponible")});else toast("Partage indisponible")};
+  if(navigator.share)navigator.share({title:r.name,text:text,url:url}).catch(function(e){if(!e||e.name!=="AbortError")fb()});else fb()}
+function route(){var h=decodeURIComponent(location.hash.slice(1));if(!h){if(current){$("detail").classList.remove("open");current=null}return}
+  var r=recipes.filter(function(x){return x.slug===h})[0];if(r&&(!current||current.slug!==h))openDetail(r)}
+window.addEventListener("hashchange",route);
+$("q").addEventListener("input",function(e){query=e.target.value;renderList()});
+
+function setup(){var p=document.createElement("div");p.className="msg";
+  p.innerHTML="<b>Dernière étape :</b> dans ta feuille Google Sheets, va dans <i>Fichier, Partager, Publier sur le Web</i>, choisis l’onglet « Liste de recettes » et le format « Valeurs séparées par des virgules (.csv) », puis clique sur Publier. Colle le lien obtenu dans <code>CSV_URL</code> au début du script de ce fichier.";
+  $("list").appendChild(p);$("status").textContent="Liste non connectée"}
+function show(rows,note){recipes=parse(rows);$("status").textContent=recipes.length+" recettes"+note;renderChips();renderList();route()}
+function load(){
+  if(!CSV_URL){setup();return}
+  fetch(CSV_URL+(CSV_URL.indexOf("?")<0?"?":"&")+"t="+Date.now()).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
+    try{localStorage.setItem("recettes-csv",t)}catch(e){}
+    show(csv(t),", à jour à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))
+  }).catch(function(){var t=null;try{t=localStorage.getItem("recettes-csv")}catch(e){}
+    if(t)show(csv(t),", hors connexion");else{$("list").textContent="";var p=document.createElement("p");p.className="msg";p.textContent="La liste n’a pas pu être chargée. Vérifie la connexion puis recharge la page.";$("list").appendChild(p);$("status").textContent="Liste indisponible"}})}
+load();setInterval(load,120000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
+if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+</script>
+</body>
+</html>
