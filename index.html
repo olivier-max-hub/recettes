@@ -53,6 +53,7 @@ h2{font:600 1.15rem "Economica","Arial Narrow",Arial,sans-serif;margin:22px 0 10
 .cm .btn{justify-self:start}
 .cm .btn:disabled{opacity:.6;cursor:default}
 .note{margin:0;color:var(--mute);font-size:.85rem}
+.cm .note{color:#1f2a24}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 footer{padding:8px 16px 28px;color:#1f2a24;font-size:.95rem}
 footer p{max-width:70ch;margin:0 auto;text-align:center;background:rgba(255,255,255,.75);padding:10px 14px;border-radius:10px}
@@ -73,8 +74,9 @@ header .wrap{position:relative}
 .catb small{font-size:1rem}
 .catb .ill{font-size:3.4rem;line-height:1;flex:none}
 .catb:focus-visible{outline:3px solid #0b4f59;outline-offset:2px}
-.backbar{display:flex;align-items:center;gap:12px;margin:0 0 14px}
-.backbar b{font-size:1.6rem;color:var(--ink)}
+.backbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.backbar b{font-size:1.6rem;color:#0b4f59;text-align:right;margin-left:auto}
+.backbar .btn.alt{background:var(--acc);border-color:var(--acc);color:#fff}
 @media (max-width:699px){#chips{display:none}}
 :root{--bar:34px}
 body{padding-bottom:var(--bar)}
