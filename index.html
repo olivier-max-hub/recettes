@@ -170,6 +170,8 @@ function renderList(){var box=$("list");box.textContent="";
 var fiches={},viaList=false;
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function noLinks(t){
+  var x0=String(t).replace(/cuisine oph[eé]lie|popote et potager/gi,"");
+  if(x0!==String(t)){var w0=x0.replace(/[:;,\-–()]/g," ").split(/\s+/).filter(Boolean);return w0.length<=6?"":x0.replace(/\s{2,}/g," ").replace(/(?:[\s,;:\-–]+(?:de|du|des|par|chez|sur|via|voir|ici|et|à retrouver|à voir|à lire|à consulter))*[\s:;,\-–]*$/i,"").trim()}
   var x=String(t).replace(/(?:\b(?:sur|via|ici)\s+)?\(?\b(?:https?:\/\/|www\.)[^\s)]+\)?/gi,"").replace(/(?:\b(?:sur|via|ici)\s+)?\b(?:youtube\.com|youtu\.be|dailymotion\.com|instagram\.com|facebook\.com|tiktok\.com)\S*/gi,"").replace(/\s{2,}/g," ").trim();
   var n=String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
   var o=String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
