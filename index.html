@@ -205,7 +205,7 @@ function showRecipe(r,silent){
     var s2=el("section","rsec");s2.appendChild(el("h3",null,f.prepTitle||"Préparation"));
     var st=el("div","rsteps"),k=0;
     (f.steps||[]).forEach(function(x){if(x.l){st.appendChild(el("p","rlabel",x.t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,x.t));st.appendChild(d)}});
-    (f.notes||[]).forEach(function(t){st.appendChild(el("p","rnote",t))});
+    (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};st.appendChild(el("p",x.l?"rlabel":"rnote",x.t))});
     s2.appendChild(st);box.appendChild(s2);
   }else{
     var id=(r.link.match(/\/d\/([\w-]+)/)||[])[1];
