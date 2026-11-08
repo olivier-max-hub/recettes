@@ -198,7 +198,6 @@ function showRecipe(r,silent){
   box.appendChild(bar());
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
   tx.appendChild(el("h2",null,r.name));
-  var meta=[r.cat,r.type,r.region].filter(Boolean).join(" · ");if(meta)tx.appendChild(el("p",null,meta));
   hero.appendChild(tx);
   if(img){var im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){im.remove();hero.classList.add("solo")};hero.appendChild(im)}
   box.appendChild(hero);
