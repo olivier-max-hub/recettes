@@ -171,6 +171,11 @@ var fiches={},viaList=false;
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function noLinks(t){
   var x=String(t).replace(/(?:\b(?:sur|via|ici)\s+)?\(?\b(?:https?:\/\/|www\.)[^\s)]+\)?/gi,"").replace(/(?:\b(?:sur|via|ici)\s+)?\b(?:youtube\.com|youtu\.be|dailymotion\.com|instagram\.com|facebook\.com|tiktok\.com)\S*/gi,"").replace(/\s{2,}/g," ").trim();
+  var n=String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  var o=String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+  if(/^(sources?|references?|credits?)\b(?! de chaleur)[^:]{0,20}:/.test(o)||/^(sources?|references?|credits?)$/.test(n))return"";
+  if(/^(inspire(?:e)? (?:de|par)|d apres|adapte(?:e)? (?:de|d)|merci a)\b/.test(n)&&n.split(" ").length<=12)return"";
+  if(/^(youtube|video|videos|lien|liens)$/.test(n)||/^(reference|references|source|sources|lien|liens|video|videos|voir) (youtube|video|videos|lien|ici|web|internet|en ligne)$/.test(n))return"";
   if(x===String(t).trim())return t;
   var w=x.replace(/[:;,\-–()]/g," ").split(/\s+/).filter(Boolean);
   return w.length<=6?"":x.replace(/[\s:;,\-–]+$/,"")
@@ -189,8 +194,7 @@ function showRecipe(r,silent){
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Retour aux recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
-    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);
-    if(COMMENT_URL){var cm=el("a","btn","Laisser un commentaire");cm.href="#commentaire";cm.onclick=goComment;b.appendChild(cm)}return b}
+    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);return b}
   box.appendChild(bar());
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
   tx.appendChild(el("h2",null,r.name));
@@ -210,7 +214,12 @@ function showRecipe(r,silent){
     var s2=el("section","rsec");s2.appendChild(el("h3",null,f.prepTitle||"Préparation"));
     var st=el("div","rsteps"),k=0;
     (f.steps||[]).forEach(function(x){var t=noLinks(x.t);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
-    (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};var t=noLinks(x.t);if(!t)return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
+    var skipO=false;
+    (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};
+      var n=String(x.t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+      if(/^origine\b/.test(n)&&(x.l||n.split(" ").length<=4)){skipO=true;return}
+      if(skipO){if(x.l||/^temps\b/.test(n))skipO=false;else return}
+      var t=noLinks(x.t);if(!t)return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
     s2.appendChild(st);box.appendChild(s2);
   }else{
     var id=(r.link.match(/\/d\/([\w-]+)/)||[])[1];
