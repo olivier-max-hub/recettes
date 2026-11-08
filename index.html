@@ -75,7 +75,8 @@ header .wrap{position:relative}
 .catb .ill{font-size:3.4rem;line-height:1;flex:none}
 .catb:focus-visible{outline:3px solid #0b4f59;outline-offset:2px}
 .backbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
-.backbar b{font-size:1.6rem;color:#0b4f59;text-align:right;margin-left:auto}
+.cwrap{flex:1;min-width:0;display:flex;justify-content:center}
+.cpill{max-width:100%;text-align:center;font-size:1.4rem;line-height:1.15;color:#0b4f59;padding:8px 18px;border-radius:99px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
 .backbar .btn.alt{background:var(--acc);border-color:var(--acc);color:#fff}
 @media (max-width:699px){#chips{display:none}}
 :root{--bar:34px}
@@ -282,7 +283,9 @@ function renderCats(box){var nav=document.createElement("nav");nav.className="ca
     var ill=document.createElement("span");ill.className="ill";ill.textContent=catIcon(c.name);ill.setAttribute("aria-hidden","true");
     a.appendChild(t);a.appendChild(ill);nav.appendChild(a)});
   box.appendChild(nav)}
-function backBar(){var d=document.createElement("div");d.className="backbar";var a=document.createElement("a");a.className="btn alt";a.href="#";a.textContent="← Catégories";var t=document.createElement("b");t.textContent=cat;d.appendChild(a);d.appendChild(t);return d}
+function backBar(){var d=document.createElement("div");d.className="backbar";var a=document.createElement("a");a.className="btn alt";a.href="#";a.textContent="← Catégories";var w=document.createElement("div");w.className="cwrap";var t=document.createElement("b");t.className="cpill";t.textContent=cat;
+  var i=catList().map(function(c){return c.name}).indexOf(cat);if(i<0)i=0;var p=PAL[i%PAL.length];t.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
+  w.appendChild(t);d.appendChild(a);d.appendChild(w);return d}
 function route(){var h=decodeURIComponent(location.hash.slice(1));
   if(h.indexOf("categorie-")===0){var cn=catList().filter(function(c){return"categorie-"+slug(c.name)===h})[0];
     if(current)hideRecipe();
