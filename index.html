@@ -152,7 +152,7 @@ function csv(t){var rows=[],r=[],f="",q=false;for(var i=0;i<t.length;i++){var c=
 function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;out.push({cat:c,name:name,type:(row[3]||"").trim(),region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:(row[6]||"").trim(),slug:slug(name)})});return out}
 
 function renderChips(){var cats=["Tout"];recipes.forEach(function(r){if(r.cat&&cats.indexOf(r.cat)<0)cats.push(r.cat)});if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
-  cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();if(c==="Tout")window.scrollTo({top:0,behavior:window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})};box.appendChild(b)})}
+  cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)})}
 function renderList(){var box=$("list");box.textContent="";
   if(isMobile()&&cat==="Tout"&&!query.trim()){renderCats(box);return}
   if(isMobile()&&cat!=="Tout")box.appendChild(backBar());
@@ -168,6 +168,7 @@ function renderList(){var box=$("list");box.textContent="";
     box.appendChild(g)})}
 
 var fiches={},viaList=false;
+function toTop(){window.scrollTo({top:0,behavior:window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function noLinks(t){
   var x0=String(t).replace(/cuisine oph[eé]lie|popote et potager/gi,"");
@@ -283,9 +284,9 @@ function backBar(){var d=document.createElement("div");d.className="backbar";var
 function route(){var h=decodeURIComponent(location.hash.slice(1));
   if(h.indexOf("categorie-")===0){var cn=catList().filter(function(c){return"categorie-"+slug(c.name)===h})[0];
     if(current)hideRecipe();
-    if(cn&&cat!==cn.name){track("categorie",cn.name);cat=cn.name;renderChips();renderList();window.scrollTo(0,0)}return}
+    if(cn&&cat!==cn.name){track("categorie",cn.name);cat=cn.name;renderChips();renderList();toTop()}return}
   if(!h){if(current)hideRecipe();
-    if(isMobile()&&cat!=="Tout"){cat="Tout";renderChips();renderList();window.scrollTo(0,0)}return}
+    if(isMobile()&&cat!=="Tout"){cat="Tout";renderChips();renderList();toTop()}return}
   var r=recipes.filter(function(x){return x.slug===h})[0];if(r&&(!current||current.slug!==h))showRecipe(r)}
 window.addEventListener("hashchange",route);
 (function(){var mq=window.matchMedia&&matchMedia("(max-width:699px)");if(!mq)return;var f=function(){renderChips();renderList()};if(mq.addEventListener)mq.addEventListener("change",f);else if(mq.addListener)mq.addListener(f)})();
