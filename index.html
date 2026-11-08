@@ -121,8 +121,7 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 </div></header>
 <main><div class="wrap" id="list"></div></main>
 <section id="recipe" hidden><div class="wrap" id="rp"></div></section>
-<footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail et ton message sont enregistrés uniquement pour te répondre. Ils ne sont ni affichés sur le site ni partagés avec d’autres personnes, et tu peux demander leur suppression à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.</p>
-<p style="margin-top:6px;font-size:.85rem"><a href="#" id="statsToggle" style="color:#1f2a24"></a></p></footer>
+<footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail et ton message sont enregistrés uniquement pour te répondre. Ils ne sont ni affichés sur le site ni partagés avec d’autres personnes, et tu peux demander leur suppression à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.</p></footer>
 <div id="sharebar"><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
@@ -170,6 +169,12 @@ function renderList(){var box=$("list");box.textContent="";
 
 var fiches={},viaList=false;
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function noLinks(t){
+  var x=String(t).replace(/(?:\b(?:sur|via|ici)\s+)?\(?\b(?:https?:\/\/|www\.)[^\s)]+\)?/gi,"").replace(/(?:\b(?:sur|via|ici)\s+)?\b(?:youtube\.com|youtu\.be|dailymotion\.com|instagram\.com|facebook\.com|tiktok\.com)\S*/gi,"").replace(/\s{2,}/g," ").trim();
+  if(x===String(t).trim())return t;
+  var w=x.replace(/[:;,\-–()]/g," ").split(/\s+/).filter(Boolean);
+  return w.length<=6?"":x.replace(/[\s:;,\-–]+$/,"")
+}
 function loadFiches(){
   try{var c=JSON.parse(localStorage.getItem("recettes-fiches")||"null");if(c&&c.f)fiches=c.f}catch(e){}
   if(!RECIPES_URL)return;
@@ -200,12 +205,12 @@ function showRecipe(r,silent){
   if(f){
     var s1=el("section","rsec");s1.appendChild(el("h3",null,f.ingTitle||"Ingrédients"));
     var ib=el("div","rbox rcols"),ul=null;
-    (f.ing||[]).forEach(function(it){if(it.l){ib.appendChild(el("p","rlabel",it.t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,it.t))}});
+    (f.ing||[]).forEach(function(it){var t=noLinks(it.t);if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
     s1.appendChild(ib);box.appendChild(s1);
     var s2=el("section","rsec");s2.appendChild(el("h3",null,f.prepTitle||"Préparation"));
     var st=el("div","rsteps"),k=0;
-    (f.steps||[]).forEach(function(x){if(x.l){st.appendChild(el("p","rlabel",x.t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,x.t));st.appendChild(d)}});
-    (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};st.appendChild(el("p",x.l?"rlabel":"rnote",x.t))});
+    (f.steps||[]).forEach(function(x){var t=noLinks(x.t);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
+    (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};var t=noLinks(x.t);if(!t)return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
     s2.appendChild(st);box.appendChild(s2);
   }else{
     var id=(r.link.match(/\/d\/([\w-]+)/)||[])[1];
@@ -244,15 +249,10 @@ function track(ev,d,o){
   if(!STATS_URL)return;
   try{if(navigator.doNotTrack==="1"||localStorage.getItem("recettes-nostats"))return}catch(e){}
   var p={e:ev,d:d||"",device:deviceType(),s:sid_(),l:(navigator.language||"").slice(0,10)};if(o)p.o=o;
-  try{fetch(STATS_URL,{method:"POST",mode:"no-cors",keepalive:true,body:new URLSearchParams(p)})}catch(e){}
+  try{fetch(STATS_URL,{method:"POST",mode:"no-cors",keepalive:true,body:new URLSearchParams(p)}).catch(function(){})}catch(e){}
 }
-function majToggle_(){var off=false;try{off=!!localStorage.getItem("recettes-nostats")}catch(e){}var a=$("statsToggle");if(a)a.textContent=off?"Compter à nouveau mes visites":"Ne plus compter mes visites"}
 function initStats_(){
-  var tg=$("statsToggle");if(tg)tg.addEventListener("click",function(e){e.preventDefault();
-    try{if(localStorage.getItem("recettes-nostats")){localStorage.removeItem("recettes-nostats");toast("Tes visites sont de nouveau comptées")}else{localStorage.setItem("recettes-nostats","1");toast("Tes visites ne sont plus comptées sur cet appareil")}}catch(x){toast("Réglage indisponible");return}
-    majToggle_()});
   try{var q=new URLSearchParams(location.search);if(q.has("nostats"))localStorage.setItem("recettes-nostats","1");if(q.has("stats"))localStorage.removeItem("recettes-nostats")}catch(e){}
-  majToggle_();
   try{if(sessionStorage.getItem("recettes-visit"))return;sessionStorage.setItem("recettes-visit","1")}catch(e){}
   var o="direct";try{if(document.referrer){var h=new URL(document.referrer).hostname;if(h&&h!==location.hostname)o=h}}catch(e){}
   track("visite","",o)
