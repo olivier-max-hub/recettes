@@ -47,12 +47,6 @@ h2{font:600 1.15rem "Economica","Arial Narrow",Arial,sans-serif;margin:22px 0 10
 .msg code{background:var(--card);padding:1px 6px;border-radius:5px;word-break:break-all}
 .btn{border:1px solid var(--acc);background:var(--acc);color:var(--on);padding:9px 22px;border-radius:99px;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}
 .btn.alt{background:transparent;color:var(--acc)}
-.rvidw{display:flex;justify-content:center;margin:12px 0 2px}
-.rvid{border:1px solid #d3e6ea;background:#fff;color:#0b4f59;border-radius:99px;padding:2px 12px;font:inherit;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.rvid svg{width:.8em;height:.8em}
-.rvid.big{font-size:1.1rem;padding:7px 22px;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.rvid.big svg{width:.85em;height:.85em}
-.rvid:hover{border-color:#0f6b78}
 .cm{margin-top:18px;padding:18px;background:var(--card);border:1px solid var(--line);border-radius:22px;display:grid;gap:10px}
 .cm h4{margin:0;font:600 1.1rem "Economica","Arial Narrow",Arial,sans-serif}
 .cm input,.cm textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:16px;font:inherit;background:#fff;color:var(--ink)}
@@ -130,17 +124,16 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 </div></header>
 <main><div class="wrap" id="list"></div></main>
 <section id="recipe" hidden><div class="wrap" id="rp"></div></section>
-<footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail et ton message sont enregistrés uniquement pour te répondre. Ils ne sont ni affichés sur le site ni partagés avec d’autres personnes, et tu peux demander leur suppression à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.</p></footer>
+<footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail sert uniquement à te répondre et à t’envoyer un e-mail de remerciement, puis elle est supprimée du tableau des commentaires après 24 heures. Ton message n’est ni affiché sur le site ni partagé avec d’autres personnes, et tu peux demander sa suppression à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.</p></footer>
 <div id="sharebar"><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
-<script src="chef-video.js"></script>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
 var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
 
 /* Colle ici l’adresse (se terminant par /exec) de ton script Google Apps Script qui reçoit les commentaires. Vide = formulaire masqué. */
-var COMMENT_URL="https://script.google.com/macros/s/AKfycbziHIdVkqXG_zVHB9_NZ1TnZlt2RoneqWL1JRqambljlUHGbO2pBuutN1DU5qUwGqh2/exec";
+var COMMENT_URL="https://script.google.com/macros/s/AKfycbwHyUnR52o7wBmwnEa2QHThkO-n6AMmdSP507o15MRm8hlXyav_tVHyjpz5M8rhW97D/exec";
 /* Colle ici l’adresse (se terminant par /exec) du script « fiches » (synchronisation des recettes). Vide = fiches lues dans Google Docs. */
 var RECIPES_URL="https://script.google.com/macros/s/AKfycbwht5jYQBk8aX5eHREIhutLfSy5UwE3DSldTOZB9F7zEH-mqDCRFkUMiGYOXb1ftsZV/exec";
 /* Colle ici l’adresse (se terminant par /exec) du script des statistiques. Vide = aucun suivi. */
@@ -206,14 +199,11 @@ function showRecipe(r,silent){
   if(!silent){track("recette",r.name);window.scrollTo(0,0)}
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
-  var vid=f&&window.ChefVideo?videoData(r,f):null;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Retour aux recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
-    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);
-    return b}
+    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);return b}
   box.appendChild(bar());
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
   tx.appendChild(el("h2",null,r.name));
-  if(vid){var vb=el("button","rvid big");vb.type="button";vb.innerHTML=PLAY_SVG+"Voir la recette en vidéo";vb.onclick=function(){openVideo(r,vid,null)};var vw=el("div","rvidw");vw.appendChild(vb);tx.appendChild(vw)}
   hero.appendChild(tx);
   if(img){var im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){im.remove();hero.classList.add("solo")};hero.appendChild(im)}
   box.appendChild(hero);
@@ -228,8 +218,7 @@ function showRecipe(r,silent){
     s1.appendChild(ib);box.appendChild(s1);
     var s2=el("section","rsec");s2.appendChild(el("h3",null,f.prepTitle||"Préparation"));
     var st=el("div","rsteps"),k=0;
-    (f.steps||[]).forEach(function(x){var t=noLinks(x.t);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));
-      d.appendChild(el("p",null,t));st.appendChild(d)}});
+    (f.steps||[]).forEach(function(x){var t=noLinks(x.t);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
     var skipO=false;
     (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};
       var n=String(x.t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
@@ -244,16 +233,7 @@ function showRecipe(r,silent){
   }
   var fin=el("div","rbar");var b2=el("a","btn alt","← Retour aux recettes");b2.href="#";b2.onclick=function(e){e.preventDefault();leaveRecipe()};fin.appendChild(b2);box.appendChild(fin);
 }
-var PLAY_SVG="<svg viewBox='0 0 16 16' aria-hidden='true'><path d='M4 2.5v11l9.5-5.5z' fill='currentColor'/></svg>";
-function videoData(r,f){
-  var ing=[],steps=[],notes=[];
-  (f.ing||[]).forEach(function(it){var t=noLinks(it.t);if(t&&!it.l)ing.push(t)});
-  (f.steps||[]).forEach(function(x){var t=noLinks(x.t);if(t&&!x.l)steps.push(t)});
-  (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};var t=noLinks(x.t);if(t&&!x.l)notes.push(t)});
-  if(!steps.length)return null;
-  return{name:r.name,cat:r.cat,type:r.type,ingredients:ing,steps:steps,notes:notes}}
-function openVideo(r,vid,step){track("video",r.name);window.ChefVideo.open(vid,step,{pick:true})}
-function hideRecipe(){if(window.ChefVideo)window.ChefVideo.close();current=null;document.body.classList.remove("view-recipe");$("recipe").hidden=true}
+function hideRecipe(){current=null;document.body.classList.remove("view-recipe");$("recipe").hidden=true}
 function leaveRecipe(){
   if(viaList){viaList=false;history.back();return}
   hideRecipe();var keep=isMobile()&&cat!=="Tout"?"#categorie-"+slug(cat):"";history.replaceState(null,"",location.pathname+location.search+keep)
@@ -263,7 +243,7 @@ function commentBox(r){var w=document.createElement("form");w.className="cm";
   var e=document.createElement("input");e.type="email";e.required=true;e.maxLength=200;e.autocomplete="email";e.placeholder="Ton adresse e-mail";e.setAttribute("aria-label","Adresse e-mail");
   var t=document.createElement("textarea");t.required=true;t.rows=4;t.maxLength=1000;t.placeholder="Ton commentaire";t.setAttribute("aria-label","Commentaire");
   var hp=document.createElement("input");hp.type="text";hp.tabIndex=-1;hp.autocomplete="off";hp.className="hp";hp.setAttribute("aria-hidden","true");
-  var n=document.createElement("p");n.className="note";n.textContent="Ton commentaire et ton adresse restent privés : aucun autre visiteur ne les voit, et ils ne servent qu’à te répondre.";
+  var n=document.createElement("p");n.className="note";n.textContent="Ton commentaire et ton adresse restent privés : aucun autre visiteur ne les voit. Ton adresse est supprimée du tableau des commentaires après 24 heures. Tu recevras un e-mail de remerciement.";
   var b=document.createElement("button");b.className="btn";b.type="submit";b.textContent="Envoyer";
   var s=document.createElement("p");s.className="note";s.setAttribute("role","status");
   [h,e,t,hp,n,b,s].forEach(function(x){w.appendChild(x)});
