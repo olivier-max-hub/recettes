@@ -255,12 +255,54 @@ function duree(v){v=vide(v);if(/^\d+$/.test(v))v+=" min";return v.replace(/\bmn\
 function cuis(v){v=duree(v);return /^0(\s*min)?$/i.test(v)?"Sans cuisson":v}
 function net(t,nom){var u=noLinks(t);return u?nettoyerLigne_(u,nom):""}
 /* Vidéo pas à pas avec Chef Léa ou Chef Hugo (chef-video.js, voix dans le dossier audio) */
+/* Vouvoiement -> tutoiement dans le texte lu par les chefs (impératif « -ez », votre/vos/vous) */
+var TU_IRREG = {pouvez:"peux",voulez:"veux",devez:"dois",savez:"sais",avez:"as",faites:"fais",dites:"dis",mettez:"mets",battez:"bats",prenez:"prends",
+  attendez:"attends",rendez:"rends",servez:"sers",partez:"pars",sortez:"sors",teignez:"teins",joignez:"joins",éteignez:"éteins",tenez:"tiens",venez:"viens",
+  suivez:"suis",vivez:"vis",descendez:"descends",entendez:"entends",répondez:"réponds",perdez:"perds",étendez:"étends",mordez:"mords",
+  vendez:"vends",écrivez:"écris",lisez:"lis",buvez:"bois",croyez:"crois",voyez:"vois",allez:"vas",reprenez:"reprends",surveillez:"surveille",pelez:"pèle",jetez:"jette",rejetez:"rejette",appelez:"appelle",achetez:"achète",levez:"lève",soulevez:"soulève",prélevez:"prélève",gelez:"gèle",congelez:"congèle",ficelez:"ficelle",feuilletez:"feuillette",cuisez:"cuis",réduisez:"réduis",conduisez:"conduis"};
+var TU_NOT = /^(chez|assez|nez|rez|lez|prêtez)$/i;
+var TU_FEM = /^(pâte|préparation|farine|recette|cuisine|crème|sauce|casserole|poêle|plaque|tarte|viande|soupe|purée|pomme|tomate|courgette|carotte|salade|assiette|cuillère|fourchette|mousse|glace|garniture|marinade|machine|meringue|pavlova|génoise|brioche|poche|feuille|cuisson|farce|ganache|chantilly|vanille|levure|poire|banane|fraise|crêpe|galette|quiche|terrine|friteuse|sauteuse|bassine|cocotte|passoire|spatule|balance|température|forme|tourte|couche|boule|pâtisserie|décoration|présentation|macaronnade)/i;
+function tuVerbe(w, apresVous) {
+  var lw = w.toLowerCase(), r;
+  if (TU_NOT.test(lw)) return null;
+  if (Object.prototype.hasOwnProperty.call(TU_IRREG, lw)) r = TU_IRREG[lw];
+  else if (/(garn|rempl|fin|chois|réun|ramoll|durc|épaiss|blanch|sais|pétr|roug|gross|nourr|mûr|assoupl|raffermi|jaun|brun|grand|réfléch|obé|polis)issez$/.test(lw)) r = lw.slice(0, -3);   // garnissez -> garnis
+  else if (/(ouvrez|couvrez|offrez|ouvriez)$/.test(lw)) r = lw.slice(0, -2) + "e";
+  else if (/ez$/.test(lw) && lw.length > 4) r = lw.slice(0, -1) + (apresVous ? "s" : "");  // ajoutez -> ajoute ; vous aimez -> tu aimes
+  else return null;
+  r = r.replace(/é([^aeiouyéèêàâîïôûù])e$/, "è$1e");
+  if (!apresVous && /ez$/.test(lw) && !Object.prototype.hasOwnProperty.call(TU_IRREG, lw) && !/issez$/.test(lw) && r.slice(-1) !== "e") r = r;
+  return w.charAt(0) === w.charAt(0).toUpperCase() && w.charAt(0) !== w.charAt(0).toLowerCase() ? r.charAt(0).toUpperCase() + r.slice(1) : r;
+}
+function tuForm(texte) {
+  var s = String(texte);
+  // « vous + verbe » (avec ou sans négation) : présent à la 2e personne du singulier
+  s = s.replace(/\b(si |que |quand |lorsque |comme |et |ou )?(vous) (n[’']|ne )?([a-zà-ÿ]+ez|êtes|allez)\b/gi, function (a, pre, vous, neg, v) {
+    var t = /^êtes$/i.test(v) ? "es" : tuVerbe(v, true); if (!t) return a;
+    if (neg && /^n[’']$/i.test(neg) && !/^[aeiouyhéèêâîôû]/i.test(t)) neg = "ne ";
+    return (pre || "") + (vous === "Vous" ? "Tu" : "tu") + " " + (neg || "") + t; });
+  s = s.replace(/\bpour les ([a-zà-ÿ]+)ez-les\b/gi, function (a, b) { return "pour les " + b + "er"; });   // faute des documents : « pour les laissez-les »
+  s = s.replace(/\bFaites\b/g, "Fais").replace(/\bfaites\b/g, "fais").replace(/\bDites\b/g, "Dis").replace(/\bdites\b/g, "dis");
+  // « verbe-ez-pronom » : impératif
+  s = s.replace(/\b([A-Za-zÀ-ÿ]{3,}ez)-(le|la|les|y|en|lui|moi|nous)\b/g, function (a, v, p) {
+    var t = tuVerbe(v, false); if (!t) return a; if ((p === "y" || p === "en") && !/s$/.test(t) && /e$/.test(t)) t += "s"; return t + "-" + p; });
+  s = s.replace(/\b([A-Za-zÀ-ÿ]+)ez-vous\b/g, function (a, b) { var t = tuVerbe(b + "ez", false); return t ? t + "-toi" : a; });
+  // impératif seul
+  s = s.replace(/\b([A-Za-zÀ-ÿ]{3,}(?:ez|ites))\b/g, function (a, v) { if (/^vous$/i.test(v)) return a; var t = tuVerbe(v, false); return t || a; });
+  // possessifs
+  s = s.replace(/\b(votre|Votre) ([A-Za-zÀ-ÿ’']+)/g, function (a, p, nom) {
+    var maj = p === "Votre"; var fem = TU_FEM.test(nom) && !/^[aeiouyhéèêâîôû]/i.test(nom);
+    var r = fem ? "ta" : "ton"; return (maj ? r.charAt(0).toUpperCase() + r.slice(1) : r) + " " + nom; });
+  s = s.replace(/\bvos\b/g, "tes").replace(/\bVos\b/g, "Tes");
+  s = s.replace(/\bà vous\b/g, "à toi");
+  return s;
+}
 /* texte transmis au chef : exactement ce qui est affiché sur la page (sans noms, sources, sous-titres ni lignes de temps) */
 function chefRecette(r,f){
   var R={name:r.name,cat:r.cat,type:r.type,ingredients:[],steps:[],notes:[]};
-  (f.ing||[]).forEach(function(it){if(it.l)return;var t=net(it.t,"");if(t)R.ingredients.push(t)});
-  (f.steps||[]).forEach(function(x){if(x.l)return;var t=net(x.t,r.name);if(t)R.steps.push(t)});
-  (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};var t=net(x.t,r.name);if(t&&!/^temps\b/i.test(t))R.notes.push(t)});
+  (f.ing||[]).forEach(function(it){if(it.l)return;var t=net(it.t,"");if(t)R.ingredients.push(tuForm(t))});
+  (f.steps||[]).forEach(function(x){if(x.l)return;var t=net(x.t,r.name);if(t)R.steps.push(tuForm(t))});
+  (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};var t=net(x.t,r.name);if(t&&!/^temps\b/i.test(t))R.notes.push(tuForm(t))});
   return R}
 function chefOuvrir(r,f,debut){
   var R=chefRecette(r,f);
