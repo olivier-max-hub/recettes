@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Compléter les voix des chefs</title>
+<style>
+:root{--acc:#0f6b78;--pale:#eef8fb;--ink:#1f2a24;--mute:#5d6f73;--line:#d3e6ea}
+*{box-sizing:border-box}
+body{margin:0;font:17px/1.45 "Economica","Arial Narrow",Arial,sans-serif;color:var(--ink);background:linear-gradient(#f1fafc,#e6f6f7)}
+header{background:var(--acc);color:#fff;padding:16px 20px}
+header h1{margin:0;font-size:1.6rem}
+main{max-width:860px;margin:0 auto;padding:16px}
+section{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px 18px;margin:0 0 14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+h2{margin:0 0 8px;color:var(--acc);font-size:1.3rem}
+p{margin:6px 0}
+.mute{color:var(--mute);font-size:.92rem}
+label{display:block;margin:8px 0 2px;font-weight:700}
+input,select{font:inherit;padding:7px 12px;border:1px solid var(--line);border-radius:14px;width:100%;background:#fff;color:var(--ink)}
+input[type=range]{padding:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+button{font:inherit;font-weight:700;border:1px solid var(--acc);background:var(--acc);color:#fff;padding:9px 22px;border-radius:99px;cursor:pointer;margin:6px 8px 0 0}
+button.alt{background:#fff;color:var(--acc)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.bar{height:16px;border-radius:99px;background:#e3f6f8;overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
+#journal{max-height:170px;overflow:auto;font-size:.9rem;color:var(--mute);background:var(--pale);border-radius:12px;padding:8px 12px;margin-top:8px;white-space:pre-wrap}
+.ok{color:#1f7a43;font-weight:700}.ko{color:#b3261e;font-weight:700}
+a.dl{display:inline-block;margin:6px 8px 0 0;padding:9px 20px;border-radius:99px;background:#fff1b8;color:#0b4f59;text-decoration:none;font-weight:700;border:1px solid #e0c25a}
+iframe{display:none}
+</style>
+</head>
+<body>
+<header><h1>Compléter les voix des chefs</h1></header>
+<main>
+<section>
+  <p>Cet outil repère les phrases lues par Léa et Hugo qui n’ont pas encore de voix ElevenLabs, les fait enregistrer avec ta clé, puis te donne les fichiers à déposer dans ton dépôt GitHub.</p>
+  <p class="mute">Ta clé reste dans cette page : elle n’est envoyée qu’à ElevenLabs et n’est enregistrée nulle part. Cette page est à usage privé : tu peux la supprimer du dépôt quand tu as terminé.</p>
+</section>
+
+<section>
+  <h2>1. Analyse</h2>
+  <div id="analyse">Chargement du site et des recettes…</div>
+  <button class="alt" id="reanalyser" type="button">Relancer l’analyse</button>
+</section>
+
+<section>
+  <h2>2. Réglages</h2>
+  <label for="cle">Clé ElevenLabs (xi-api-key)</label>
+  <input id="cle" type="password" autocomplete="off" placeholder="Colle ta clé ici">
+  <div class="row">
+    <div><label for="voix_f">Voix de Léa (identifiant)</label><input id="voix_f" type="text"><div class="mute" id="nom_f"></div></div>
+    <div><label for="voix_m">Voix de Hugo (identifiant)</label><input id="voix_m" type="text"><div class="mute" id="nom_m"></div></div>
+  </div>
+  <div class="row">
+    <div><label for="modele">Modèle</label><input id="modele" type="text"></div>
+    <div><label for="format">Format audio</label>
+      <select id="format">
+        <option value="mp3_44100_64" selected>MP3 44,1 kHz 64 kbit/s (comme les fichiers actuels)</option>
+        <option value="mp3_44100_96">MP3 44,1 kHz 96 kbit/s</option>
+        <option value="mp3_44100_128">MP3 44,1 kHz 128 kbit/s</option>
+      </select></div>
+  </div>
+  <div class="row">
+    <div><label for="stab">Stabilité : <span id="v_stab">0,50</span></label><input id="stab" type="range" min="0" max="1" step="0.05" value="0.5"></div>
+    <div><label for="sim">Similarité : <span id="v_sim">0,75</span></label><input id="sim" type="range" min="0" max="1" step="0.05" value="0.75"></div>
+  </div>
+  <div class="row">
+    <div><label for="style">Style : <span id="v_style">0,00</span></label><input id="style" type="range" min="0" max="1" step="0.05" value="0"></div>
+    <div><label for="boost">Amélioration de la voix</label><select id="boost"><option value="1" selected>Activée</option><option value="0">Désactivée</option></select></div>
+  </div>
+  <p class="mute">Si tu te souviens des réglages utilisés la première fois, mets les mêmes pour que les nouvelles phrases sonnent comme les anciennes. Fais d’abord un essai ci-dessous.</p>
+</section>
+
+<section>
+  <h2>3. Essai</h2>
+  <p>Génère une seule phrase pour vérifier la voix (consomme quelques crédits).</p>
+  <button id="essai_f" type="button" disabled>Essayer Léa</button>
+  <button id="essai_m" type="button" disabled>Essayer Hugo</button>
+  <audio id="lecteur" controls style="width:100%;margin-top:10px;display:none"></audio>
+  <div id="essai_msg" class="mute"></div>
+</section>
+
+<section>
+  <h2>4. Génération</h2>
+  <label for="qui">Voix à générer</label>
+  <select id="qui"><option value="fm" selected>Léa et Hugo</option><option value="f">Léa seulement</option><option value="m">Hugo seulement</option></select>
+  <label for="simult">Appels simultanés</label>
+  <select id="simult"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+  <button id="lancer" type="button" disabled>Générer toutes les phrases manquantes</button>
+  <button id="arreter" class="alt" type="button" disabled>Arrêter</button>
+  <div class="bar"><i id="progres"></i></div>
+  <div id="etat" class="mute">En attente.</div>
+  <div id="journal" hidden></div>
+</section>
+
+<section>
+  <h2>5. Fichiers à mettre en ligne</h2>
+  <p class="mute">Dépose d’abord tous les lots de voix, puis le fichier <b>index.json</b> en dernier (il remplace l’ancien dans le dossier <b>audio</b>).</p>
+  <div id="liens"></div>
+  <button id="preparer" class="alt" type="button" disabled>Préparer les fichiers à télécharger</button>
+</section>
+</main>
+
+<iframe id="site" title="site" src="index.html?nostats=1"></iframe>
+<script src="chef-video.js"></script>
+<script>
+(function () {
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+var CHEF_NOM = { f: "Léa", m: "Hugo" };
+var W = null, man = null, todo = [], blobs = { f: {}, m: {} }, arret = false, enCours = false, KEY = "";
+
+function log(m) { var j = $("journal"); j.hidden = false; j.textContent += m + "\n"; j.scrollTop = j.scrollHeight; }
+function pause(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function attendre(cond, ms) {
+  return new Promise(function (res, rej) {
+    var t0 = Date.now();
+    (function b() { var ok = false; try { ok = cond(); } catch (e) {} if (ok) return res(); if (Date.now() - t0 > ms) return rej(new Error("délai dépassé")); setTimeout(b, 300); })();
+  });
+}
+["stab", "sim", "style"].forEach(function (k) {
+  $(k).oninput = function () { $("v_" + k).textContent = (+$(k).value).toFixed(2).replace(".", ","); };
+});
+
+/* ---------- 1. Analyse : mêmes phrases que celles lues sur le site ---------- */
+async function analyser() {
+  $("analyse").textContent = "Chargement du site et des recettes…";
+  ["essai_f", "essai_m", "lancer", "preparer"].forEach(function (i) { $(i).disabled = true; });
+  try {
+    W = $("site").contentWindow;
+    await attendre(function () { return W.recipes && W.recipes.length && W.fiches && Object.keys(W.fiches).length && typeof W.chefRecette === "function"; }, 60000);
+    man = await fetch("audio/index.json", { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error("audio/index.json introuvable"); return r.json(); });
+  } catch (e) {
+    $("analyse").innerHTML = '<span class="ko">Analyse impossible : ' + e.message + '.</span> Vérifie que cette page est bien ouverte depuis ton site (même adresse que les recettes) et que la dernière version de index.html est en ligne.';
+    return;
+  }
+  var phrases = {}, nbRecettes = 0;
+  W.recipes.forEach(function (r) {
+    var f = W.fiches[r.slug]; if (!f) return;
+    var R = W.chefRecette(r, f); if (!R.steps.length) return; nbRecettes++;
+    window.ChefVideo._buildClips(R).forEach(function (c) { phrases[window.ChefVideo._hash(c.text)] = c.text; });
+  });
+  todo = [];
+  ["f", "m"].forEach(function (ch) {
+    Object.keys(phrases).forEach(function (h) { if (!(man[ch] && man[ch][h])) todo.push({ ch: ch, h: h, t: phrases[h] }); });
+  });
+  var total = Object.keys(phrases).length;
+  var car = { f: 0, m: 0 }; todo.forEach(function (x) { car[x.ch] += x.t.length; });
+  $("analyse").innerHTML = nbRecettes + " recettes lues, " + total + " phrases distinctes. <b>" + todo.filter(function (x) { return x.ch === "f"; }).length +
+    " phrases</b> sans voix pour Léa et <b>" + todo.filter(function (x) { return x.ch === "m"; }).length + "</b> pour Hugo, soit environ <b>" +
+    (car.f + car.m).toLocaleString("fr-FR") + " caractères</b> à facturer par ElevenLabs (" + car.f.toLocaleString("fr-FR") + " + " + car.m.toLocaleString("fr-FR") + ").";
+  ["f", "m"].forEach(function (ch) {
+    var v = man.voices && man.voices[ch] || {};
+    if (!$("voix_" + ch).value) $("voix_" + ch).value = v.id || "";
+    $("nom_" + ch).textContent = v.name ? "Voix utilisée jusqu’ici : " + v.name : "";
+  });
+  if (!$("modele").value) $("modele").value = man.model || "eleven_multilingual_v2";
+  $("lancer").disabled = !todo.length; $("essai_f").disabled = !todo.length; $("essai_m").disabled = !todo.length;
+  $("preparer").disabled = !Object.keys(blobs.f).length && !Object.keys(blobs.m).length;
+  if (!todo.length) $("analyse").innerHTML += ' <span class="ok">Tout est déjà couvert.</span>';
+  $("etat").textContent = todo.length ? "Prêt : " + todo.length + " enregistrements à produire." : "Rien à générer.";
+}
+
+/* ---------- Appel ElevenLabs ---------- */
+async function synthese(item) {
+  var voix = $("voix_" + item.ch).value.trim();
+  var url = "https://api.elevenlabs.io/v1/text-to-speech/" + encodeURIComponent(voix) + "?output_format=" + encodeURIComponent($("format").value);
+  var corps = JSON.stringify({
+    text: item.t, model_id: $("modele").value.trim(),
+    voice_settings: { stability: +$("stab").value, similarity_boost: +$("sim").value, style: +$("style").value, use_speaker_boost: $("boost").value === "1" }
+  });
+  for (var essai = 0; essai < 5; essai++) {
+    var r;
+    try { r = await fetch(url, { method: "POST", headers: { "xi-api-key": KEY, "Content-Type": "application/json", "Accept": "audio/mpeg" }, body: corps }); }
+    catch (e) { if (essai < 4) { await pause(1500 * (essai + 1)); continue; } throw new Error("connexion impossible à ElevenLabs"); }
+    if (r.ok) { var b = await r.blob(); if (b.size < 1000) throw new Error("fichier audio vide"); return b; }
+    if (r.status === 429 || r.status >= 500) { await pause(2500 * (essai + 1)); continue; }
+    var msg = ""; try { var j = await r.json(); msg = j.detail && (j.detail.message || j.detail) || ""; if (typeof msg !== "string") msg = JSON.stringify(msg); } catch (e) {}
+    var err = new Error("erreur " + r.status + (msg ? " : " + msg : "")); err.statut = r.status; err.fatale = (r.status === 401 || r.status === 402 || /quota/i.test(msg)); throw err;
+  }
+  throw new Error("trop de tentatives (limite de débit ?)");
+}
+
+function cleOk() { KEY = $("cle").value.trim(); if (!KEY) { alert("Colle d’abord ta clé ElevenLabs (étape 2)."); return false; } return true; }
+
+["f", "m"].forEach(function (ch) {
+  $("essai_" + ch).onclick = async function () {
+    if (!cleOk()) return;
+    var item = todo.filter(function (x) { return x.ch === ch; })[0]; if (!item) return;
+    $("essai_msg").textContent = "Enregistrement de l’essai (" + CHEF_NOM[ch] + ")…";
+    try {
+      var b = await synthese(item), l = $("lecteur");
+      l.src = URL.createObjectURL(b); l.style.display = "block"; l.play().catch(function () {});
+      $("essai_msg").innerHTML = '<span class="ok">Essai réussi.</span> Phrase : « ' + item.t.replace(/</g, "&lt;") + ' »';
+    } catch (e) { $("essai_msg").innerHTML = '<span class="ko">Échec : ' + e.message + "</span>"; }
+  };
+});
+
+/* ---------- 4. Génération ---------- */
+function maj() {
+  var fait = Object.keys(blobs.f).length + Object.keys(blobs.m).length;
+  var qui = $("qui").value, n = fait + todo.filter(function (x) { return !blobs[x.ch][x.h] && qui.indexOf(x.ch) >= 0; }).length;
+  $("progres").style.width = (n ? Math.round(100 * fait / n) : 0) + "%";
+  $("etat").textContent = fait + " / " + n + " enregistrements prêts.";
+  $("preparer").disabled = !fait;
+}
+$("lancer").onclick = async function () {
+  if (enCours || !cleOk()) return;
+  var qui = $("qui").value;
+  var restants = todo.filter(function (x) { return !blobs[x.ch][x.h] && qui.indexOf(x.ch) >= 0; });
+  if (!restants.length) { alert("Rien à générer pour cette sélection."); return; }
+  var car = restants.reduce(function (a, x) { return a + x.t.length; }, 0);
+  if (!confirm("Lancer " + restants.length + " enregistrements (environ " + car.toLocaleString("fr-FR") + " caractères facturés) ?")) return;
+  enCours = true; arret = false; $("lancer").disabled = true; $("arreter").disabled = false;
+  var nbErr = 0, i = 0, simult = +$("simult").value;
+  async function ouvrier() {
+    while (!arret && i < restants.length) {
+      var it = restants[i++];
+      try { blobs[it.ch][it.h] = await synthese(it); maj(); }
+      catch (e) {
+        nbErr++; log("✗ " + CHEF_NOM[it.ch] + " : « " + it.t.slice(0, 50) + "… » → " + e.message);
+        if (e.fatale) { arret = true; log("Arrêt : " + e.message); }
+      }
+    }
+  }
+  var ouvriers = []; for (var k = 0; k < simult; k++) ouvriers.push(ouvrier());
+  await Promise.all(ouvriers);
+  enCours = false; $("arreter").disabled = true; $("lancer").disabled = false; maj();
+  $("etat").innerHTML += arret ? ' <span class="ko">Interrompu.</span>' : (nbErr ? ' <span class="ko">' + nbErr + " échec(s) : relance pour réessayer.</span>" : ' <span class="ok">Terminé.</span>');
+  if (!nbErr && !arret) preparer();
+};
+$("arreter").onclick = function () { arret = true; $("arreter").disabled = true; };
+$("reanalyser").onclick = analyser;
+
+/* ---------- 5. Archives ZIP (sans compression : les MP3 le sont déjà) ---------- */
+var CRC = (function () { var t = [], c, n, k; for (n = 0; n < 256; n++) { c = n; for (k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function u16(n) { return [n & 255, (n >>> 8) & 255]; }
+function u32(n) { return [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]; }
+async function zipper(fichiers) {                     // fichiers : [{nom, octets:Uint8Array}]
+  var parts = [], central = [], offset = 0, enc = new TextEncoder();
+  fichiers.forEach(function (f) {
+    var nom = enc.encode(f.nom), crc = crc32(f.octets), taille = f.octets.length;
+    var local = new Uint8Array([0x50, 0x4B, 3, 4].concat(u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(crc), u32(taille), u32(taille), u16(nom.length), u16(0)));
+    parts.push(local, nom, f.octets);
+    central.push(new Uint8Array([0x50, 0x4B, 1, 2].concat(u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(crc), u32(taille), u32(taille), u16(nom.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset))), nom);
+    offset += local.length + nom.length + taille;
+  });
+  var tailleCentral = central.reduce(function (a, p) { return a + p.length; }, 0);
+  var fin = new Uint8Array([0x50, 0x4B, 5, 6].concat(u16(0), u16(0), u16(fichiers.length), u16(fichiers.length), u32(tailleCentral), u32(offset), u16(0)));
+  return new Blob(parts.concat(central, [fin]), { type: "application/zip" });
+}
+async function preparer() {
+  var liste = [];
+  ["f", "m"].forEach(function (ch) { Object.keys(blobs[ch]).forEach(function (h) { liste.push({ ch: ch, h: h, blob: blobs[ch][h] }); }); });
+  if (!liste.length) return;
+  $("liens").textContent = "Préparation des fichiers…";
+  var TAILLE = 80, lots = [];
+  for (var i = 0; i < liste.length; i += TAILLE) {
+    var fich = [];
+    for (var j = i; j < Math.min(i + TAILLE, liste.length); j++) {
+      var x = liste[j]; fich.push({ nom: "audio/" + x.ch + "/" + x.h + ".mp3", octets: new Uint8Array(await x.blob.arrayBuffer()) });
+    }
+    lots.push(await zipper(fich));
+  }
+  var ver = Date.now().toString(36), m2 = JSON.parse(JSON.stringify(man));
+  liste.forEach(function (x) { m2[x.ch] = m2[x.ch] || {}; m2[x.ch][x.h] = ver; });
+  m2.updated = new Date().toISOString();
+  var box = $("liens"); box.textContent = "";
+  lots.forEach(function (b, k) {
+    var a = document.createElement("a"); a.className = "dl"; a.href = URL.createObjectURL(b); a.download = "voix-lot-" + (k + 1) + ".zip";
+    var n = Math.min(TAILLE, liste.length - k * TAILLE); a.textContent = "⬇ Lot " + (k + 1) + " sur " + lots.length + " (" + n + " fichiers)"; box.appendChild(a);
+  });
+  var aj = document.createElement("a"); aj.className = "dl"; aj.style.background = "#cdeccb";
+  aj.href = URL.createObjectURL(new Blob([JSON.stringify(m2)], { type: "application/json" })); aj.download = "index.json";
+  aj.textContent = "⬇ index.json (à déposer en dernier)"; box.appendChild(aj);
+}
+$("preparer").onclick = preparer;
+
+analyser();
+})();
+</script>
+</body>
+</html>

@@ -91,6 +91,8 @@ body{padding-bottom:var(--bar)}
 #sharebar a{color:#fff;font-weight:700;font-size:1.1rem;line-height:1;text-align:center;text-decoration:underline;text-underline-offset:3px;padding:6px 24px}
 #sharebar a:focus-visible{outline-color:#fff}
 #recipe{padding:0 16px 16px}
+.chefbtn{background:#fff1b8;color:#0b4f59;border-color:#e0c25a;font-weight:700}
+.chefline{margin:0 0 12px}
 .rband{background:var(--acc);color:#fff;text-align:center;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border-radius:22px 22px 8px 8px;margin-bottom:8px}
 #recipe[hidden]{display:none}
 body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-recipe .sub{display:none}
@@ -252,6 +254,21 @@ function vide(v){v=String(v||"").trim();return /^[-–—]*$/.test(v)?"":v}
 function duree(v){v=vide(v);if(/^\d+$/.test(v))v+=" min";return v.replace(/\bmn\b\.?/gi,"min")}
 function cuis(v){v=duree(v);return /^0(\s*min)?$/i.test(v)?"Sans cuisson":v}
 function net(t,nom){var u=noLinks(t);return u?nettoyerLigne_(u,nom):""}
+/* Vidéo pas à pas avec Chef Léa ou Chef Hugo (chef-video.js, voix dans le dossier audio) */
+/* texte transmis au chef : exactement ce qui est affiché sur la page (sans noms, sources, sous-titres ni lignes de temps) */
+function chefRecette(r,f){
+  var R={name:r.name,cat:r.cat,type:r.type,ingredients:[],steps:[],notes:[]};
+  (f.ing||[]).forEach(function(it){if(it.l)return;var t=net(it.t,"");if(t)R.ingredients.push(t)});
+  (f.steps||[]).forEach(function(x){if(x.l)return;var t=net(x.t,r.name);if(t)R.steps.push(t)});
+  (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};var t=net(x.t,r.name);if(t&&!/^temps\b/i.test(t))R.notes.push(t)});
+  return R}
+function chefOuvrir(r,f,debut){
+  var R=chefRecette(r,f);
+  function go(){window.ChefVideo.open(R,debut||0)}
+  if(window.ChefVideo){go();return}
+  var s=document.createElement("script");s.src="chef-video.js";s.onload=go;
+  s.onerror=function(){toast("La vidéo du chef n’est pas disponible pour le moment.")};
+  document.head.appendChild(s)}
 function loadFiches(){
   try{var c=JSON.parse(localStorage.getItem("recettes-fiches")||"null");if(c&&c.f)fiches=c.f}catch(e){}
   if(!RECIPES_URL)return;
@@ -267,7 +284,8 @@ function showRecipe(r,silent){
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Retour aux recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
-    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);return b}
+    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);
+    if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};b.appendChild(cb)}return b}
   box.appendChild(bar());
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
@@ -286,6 +304,7 @@ function showRecipe(r,silent){
     (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
     s1.appendChild(ib);box.appendChild(s1);
     var s2=el("section","rsec");s2.appendChild(el("h3",null,"Préparation"));
+    if((f.steps||[]).length){var cl=el("p","chefline"),cb2=el("button","btn chefbtn","▶ Suivre ces étapes avec Léa ou Hugo");cb2.type="button";cb2.onclick=function(){chefOuvrir(r,f,0)};cl.appendChild(cb2);s2.appendChild(cl)}
     var st=el("div","rsteps"),k=0;
     (f.steps||[]).forEach(function(x){var t=net(x.t,r.name);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
     var skipO=false;
@@ -323,7 +342,7 @@ function commentBox(r){var w=document.createElement("form");w.className="cm";
     var body=new URLSearchParams({recipe:r.name,email:e.value.trim(),comment:t.value.trim(),device:deviceType()});
     fetch(COMMENT_URL,{method:"POST",mode:"no-cors",body:body}).then(function(){try{localStorage.setItem("recettes-cm",String(Date.now()))}catch(x){}t.value="";s.textContent="Merci, ton commentaire a été envoyé.";track("commentaire",r.name);b.disabled=false}).catch(function(){s.textContent="L’envoi a échoué. Réessaie dans un instant.";b.disabled=false})};
   return w}
-document.addEventListener("keydown",function(e){if(e.key==="Escape"&&current)leaveRecipe()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&current&&!document.querySelector(".cv-modal:not([hidden])"))leaveRecipe()});
 function share(r){track("partage",r.name);var url=location.origin+location.pathname+"#"+r.slug,text=r.name+" ("+[r.cat,r.type,r.region].filter(Boolean).join(", ")+")";
   var fb=function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text+"\n"+url).then(function(){toast("Lien copié")},function(){toast("Partage indisponible")});else toast("Partage indisponible")};
   if(navigator.share)navigator.share({title:r.name,text:text,url:url}).catch(function(e){if(!e||e.name!=="AbortError")fb()});else fb()}
