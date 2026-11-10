@@ -193,7 +193,7 @@ function noLinks(t){
 /* Nettoyage des fiches : noms de personnes, sites, sources, origine d'une recette */
 var REFS_RE = /(?:oph[eé]lie|popott?e(?: et potager)?|(?:laurent )?mariotte|julie andrieu|cooking with morgane|ca drache en nord|la cuisine de thomas|harmonie ?cuisine|c\. felder|marmiton|you ?tube|[a-z0-9-]+\.(?:com|net|fr|org|be|ch|io|info|eu)\b)/gi;
 function mots_(s) { return String(s).replace(/[:;,\-–()"«»]/g, ' ').split(/\s+/).filter(Boolean); }
-function nrm_(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+function nrm_(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\b(?:et|and)\b/g, ' ').replace(/\s+/g, ' ').trim(); }
 
 function nettoyerLigne_(t, nom) {
   var s = String(t).trim();
@@ -273,7 +273,7 @@ function showRecipe(r,silent){
       var n=String(x.t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
       if(/^origine\b/.test(n)&&(x.l||n.split(" ").length<=4)){skipO=true;return}
       if(skipO){if(x.l||/^temps\b/.test(n))skipO=false;else return}
-      var t=net(x.t,r.name);if(!t)return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
+      var t=net(x.t,r.name);if(!t)return;if(f.m&&/^temps\b/i.test(t))return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
     s2.appendChild(st);box.appendChild(s2);
   }else{
     var id=(r.link.match(/\/d\/([\w-]+)/)||[])[1];
