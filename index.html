@@ -186,6 +186,47 @@ function noLinks(t){
   var w=x.replace(/[:;,\-–()]/g," ").split(/\s+/).filter(Boolean);
   return w.length<=6?"":x.replace(/[\s:;,\-–]+$/,"")
 }
+/* nettoyage des fiches : noms de personnes, sites, sources, origine */
+/* Nettoyage des fiches : noms de personnes, sites, sources, origine d'une recette */
+/* Nettoyage des fiches : noms de personnes, sites, sources, origine d'une recette */
+var REFS_RE = /(?:cuisine oph[eé]lie|popott?e(?: et potager)?|(?:laurent )?mariotte|julie andrieu|cooking with morgane|ca drache en nord|la cuisine de thomas|harmonie ?cuisine|c\. felder|marmiton|you ?tube|[a-z0-9-]+\.(?:com|net|fr|org|be|ch|io|info|eu)\b)/gi;
+function mots_(s) { return String(s).replace(/[:;,\-–()"«»]/g, ' ').split(/\s+/).filter(Boolean); }
+function nrm_(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+
+function nettoyerLigne_(t, nom) {
+  var s = String(t).trim();
+  if (/^ins[eé]rez votre texte/i.test(s)) return '';
+  if (/^(?:son |l[’']?)?origine\b/i.test(s)) return '';
+  var phrases = s.split(/(?<=[.!?])\s+/), i0 = -1;
+  for (var i = 0; i < phrases.length; i++) {
+    if (/(?:^|[\s,;(])(?:[àa] l[’']origine|originaire|doit son nom)(?![a-zà-ÿ])/i.test(phrases[i])) { i0 = i; break; }
+  }
+  if (i0 === 0) return '';
+  if (i0 > 0) s = phrases.slice(0, i0).join(' ').trim();
+  s = s.replace(/\s*\((?:internet|[eé]cole h[oô]teli[eè]re|source[^)]*|d[’']apr[eè]s[^)]*)\)/gi, '');   // « Version 2 (Internet) » -> « Version 2 »
+  var avant = s;
+  s = s.replace(REFS_RE, '').replace(/\(\s*\)/g, '').replace(/\s{2,}/g, ' ').trim();
+  if (s !== avant) {
+    if (mots_(s).length <= 6) return '';
+    s = s.replace(/(?:[\s,;:\-–]+(?:de|du|des|par|chez|sur|via|voir|ici|et|à retrouver|à voir|à lire|à consulter|sur le site|recette))*[\s:;,\-–"«»]*$/i, '').trim();
+  }
+  if (nom) {
+    var n = nrm_(s), nn = nrm_(nom);
+    // ligne qui reprend simplement le titre de la recette (ou un morceau de ce titre) : nom de la page d'origine
+    if (n && !/:\s*$/.test(s) && mots_(s).length <= 8 && nn.indexOf(n) >= 0 && (n.split(' ').length >= 2 || n.length >= 8)) return '';
+  }
+  return s;
+}
+
+function nettoyerTitre_(t, defaut) {
+  var s = String(t || '').trim();
+  s = s.replace(/Recette sur [A-Za-z0-9.]+/gi, defaut || 'Préparation');
+  var cut = s.search(/(?<=[a-zàâçéèêëîïôûùüÿœ)])(?=(?:pour|Ingrédients?|Préparation|Recette)\b)/);
+  if (cut > 8) s = s.slice(0, cut);
+  return s.trim() || defaut || '';
+}
+
+function net(t,nom){var u=noLinks(t);return u?nettoyerLigne_(u,nom):""}
 function loadFiches(){
   try{var c=JSON.parse(localStorage.getItem("recettes-fiches")||"null");if(c&&c.f)fiches=c.f}catch(e){}
   if(!RECIPES_URL)return;
@@ -212,19 +253,19 @@ function showRecipe(r,silent){
     if(!p[1]||p[1]==="—")return;var d=el("div","rpill");d.style.background=p[2];d.appendChild(el("small",null,p[0]));d.appendChild(el("b",null,p[1]));pills.appendChild(d)});
   if(pills.children.length)box.appendChild(pills);
   if(f){
-    var s1=el("section","rsec");s1.appendChild(el("h3",null,f.ingTitle||"Ingrédients"));
+    var s1=el("section","rsec");s1.appendChild(el("h3",null,nettoyerTitre_(f.ingTitle,"Ingrédients")));
     var ib=el("div","rbox rcols"),ul=null;
-    (f.ing||[]).forEach(function(it){var t=noLinks(it.t);if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
+    (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
     s1.appendChild(ib);box.appendChild(s1);
-    var s2=el("section","rsec");s2.appendChild(el("h3",null,f.prepTitle||"Préparation"));
+    var s2=el("section","rsec");s2.appendChild(el("h3",null,nettoyerTitre_(f.prepTitle,"Préparation")));
     var st=el("div","rsteps"),k=0;
-    (f.steps||[]).forEach(function(x){var t=noLinks(x.t);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
+    (f.steps||[]).forEach(function(x){var t=net(x.t,r.name);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
     var skipO=false;
     (f.notes||[]).forEach(function(x){if(typeof x==="string")x={t:x};
       var n=String(x.t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
       if(/^origine\b/.test(n)&&(x.l||n.split(" ").length<=4)){skipO=true;return}
       if(skipO){if(x.l||/^temps\b/.test(n))skipO=false;else return}
-      var t=noLinks(x.t);if(!t)return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
+      var t=net(x.t,r.name);if(!t)return;st.appendChild(el("p",x.l?"rlabel":"rnote",t))});
     s2.appendChild(st);box.appendChild(s2);
   }else{
     var id=(r.link.match(/\/d\/([\w-]+)/)||[])[1];
