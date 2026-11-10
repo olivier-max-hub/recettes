@@ -42,6 +42,12 @@ main{padding:16px}
 @media (prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-3px)}}
 .card b{display:block;font:600 .98rem/1.25 "Economica","Arial Narrow",Arial,sans-serif}
 .card small{color:var(--mute)}
+.cinfo{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:8px -4px 0}
+.cinfo .ci:last-child:nth-child(odd){grid-column:1/-1}
+.ci{border-radius:10px;padding:4px 4px 5px;text-align:center;color:#0b4f59;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0}
+.ci .k{font-size:.58rem;letter-spacing:0;text-transform:uppercase;opacity:.85;line-height:1.1}
+.ci .v{font-weight:700;font-size:1.02rem;line-height:1.1;overflow-wrap:anywhere}
+.ci .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
 h2{font:600 1.15rem "Economica","Arial Narrow",Arial,sans-serif;margin:22px 0 10px;display:inline-block;padding:4px 14px;border-left:6px solid var(--cat,var(--acc));border-radius:6px;background:var(--card)}
 .msg{padding:24px 8px;color:var(--mute);max-width:60ch;margin:0 auto}
 .msg code{background:var(--card);padding:1px 6px;border-radius:5px;word-break:break-all}
@@ -158,6 +164,19 @@ function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var n
 
 function renderChips(){var cats=["Tout"];recipes.forEach(function(r){if(r.cat&&cats.indexOf(r.cat)<0)cats.push(r.cat)});if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
   cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)})}
+/* informations des pastilles affichées sur chaque miniature (recettes dont les informations sont validées) */
+function infosCarte(r){
+  var f=fiches[r.slug];if(!f||!f.m)return null;
+  var L=[["Durée",duree(f.m.prep),"#bfe8ee"],["Cuisson",cuis(f.m.cuisson),"#ffd9c7"],["Personnes",vide(f.m.pers),"#cdeccb"],["Difficulté",vide(f.m.diff),"#fff1b8"]];
+  var box=document.createElement("div");box.className="cinfo";
+  L.forEach(function(x){if(!x[1])return;
+    var d=document.createElement("div");d.className="ci";d.style.background=x[2];
+    var k=document.createElement("span");k.className="k";k.textContent=x[0];
+    var v=document.createElement("span");v.className="v";
+    if(x[0]==="Difficulté"){var c={Facile:"#1f7a43",Moyen:"#a85f00",Difficile:"#b3261e"}[x[1]];if(c)v.style.color=c}
+    v.appendChild(document.createTextNode(x[1]));
+    d.appendChild(k);d.appendChild(v);box.appendChild(d)});
+  return box.children.length?box:null}
 function renderList(){var box=$("list");box.textContent="";
   if(isMobile()&&cat==="Tout"&&!query.trim()){renderCats(box);return}
   if(isMobile()&&cat!=="Tout")box.appendChild(backBar());
@@ -168,7 +187,7 @@ function renderList(){var box=$("list");box.textContent="";
   order.forEach(function(c){
     var g=document.createElement("div");g.className="grid";
     groups[c].forEach(function(r){var b=document.createElement("button");b.className="card";b.style.borderTop="4px solid hsl("+hue(r.cat||r.name)+" 65% 55%)";b.appendChild(thumb(r));
-      var t=document.createElement("div");t.className="t";var n=document.createElement("b");n.textContent=r.name;var s=document.createElement("small");s.textContent=[r.type,r.region].filter(Boolean).join(", ");t.appendChild(n);t.appendChild(s);b.appendChild(t);
+      var t=document.createElement("div");t.className="t";var n=document.createElement("b");n.textContent=r.name;var inf=infosCarte(r);t.appendChild(n);if(inf)t.appendChild(inf);else{var s=document.createElement("small");s.textContent=[r.type,r.region].filter(Boolean).join(", ");t.appendChild(s)}b.appendChild(t);
       b.onclick=function(){viaList=true;location.hash=r.slug};g.appendChild(b)});
     box.appendChild(g)})}
 
@@ -237,7 +256,8 @@ function loadFiches(){
   try{var c=JSON.parse(localStorage.getItem("recettes-fiches")||"null");if(c&&c.f)fiches=c.f}catch(e){}
   if(!RECIPES_URL)return;
   fetch(RECIPES_URL+(RECIPES_URL.indexOf("?")<0?"?":"&")+"all=1").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){
-    if(!d||!d.fiches)return;fiches=d.fiches;
+    if(!d||!d.fiches)return;var avant=JSON.stringify(fiches);fiches=d.fiches;
+    if(!current&&avant!==JSON.stringify(fiches)&&typeof recipes!=="undefined"&&recipes.length)renderList();
     try{localStorage.setItem("recettes-fiches",JSON.stringify({f:d.fiches,t:Date.now()}))}catch(e){}
     if(current)showRecipe(current,true)
   }).catch(function(){})
