@@ -85,11 +85,13 @@ body{padding-bottom:var(--bar)}
 #sharebar a{color:#fff;font-weight:700;font-size:1.1rem;line-height:1;text-align:center;text-decoration:underline;text-underline-offset:3px;padding:6px 24px}
 #sharebar a:focus-visible{outline-color:#fff}
 #recipe{padding:0 16px 16px}
+.rband{background:var(--acc);color:#fff;text-align:center;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border-radius:22px 22px 8px 8px;margin-bottom:8px}
 #recipe[hidden]{display:none}
 body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-recipe .sub{display:none}
 .rbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
 .rhero{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center;background:var(--pale,#eef8fb);border-radius:26px;padding:18px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
 .rhero.solo{grid-template-columns:1fr}
+.rhero .rend{color:var(--acc);font-size:1.15rem;margin:6px 0 0}
 .rhero h2{display:block;background:none;border:0;border-radius:0;padding:0;margin:0;text-align:center;font-size:2.3rem;line-height:1.1;color:var(--acc)}
 .rhero p{margin:6px 0 0;text-align:center;color:var(--mute)}
 .rhero img{width:100%;max-height:340px;object-fit:cover;border-radius:20px;display:block}
@@ -189,7 +191,7 @@ function noLinks(t){
 /* nettoyage des fiches : noms de personnes, sites, sources, origine */
 /* Nettoyage des fiches : noms de personnes, sites, sources, origine d'une recette */
 /* Nettoyage des fiches : noms de personnes, sites, sources, origine d'une recette */
-var REFS_RE = /(?:cuisine oph[eé]lie|popott?e(?: et potager)?|(?:laurent )?mariotte|julie andrieu|cooking with morgane|ca drache en nord|la cuisine de thomas|harmonie ?cuisine|c\. felder|marmiton|you ?tube|[a-z0-9-]+\.(?:com|net|fr|org|be|ch|io|info|eu)\b)/gi;
+var REFS_RE = /(?:oph[eé]lie|popott?e(?: et potager)?|(?:laurent )?mariotte|julie andrieu|cooking with morgane|ca drache en nord|la cuisine de thomas|harmonie ?cuisine|c\. felder|marmiton|you ?tube|[a-z0-9-]+\.(?:com|net|fr|org|be|ch|io|info|eu)\b)/gi;
 function mots_(s) { return String(s).replace(/[:;,\-–()"«»]/g, ' ').split(/\s+/).filter(Boolean); }
 function nrm_(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
 
@@ -226,6 +228,10 @@ function nettoyerTitre_(t, defaut) {
   return s.trim() || defaut || '';
 }
 
+function titreIngredients_(){return "Ingrédients"}
+function vide(v){v=String(v||"").trim();return /^[-–—]*$/.test(v)?"":v}
+function duree(v){v=vide(v);if(/^\d+$/.test(v))v+=" min";return v.replace(/\bmn\b\.?/gi,"min")}
+function cuis(v){v=duree(v);return /^0(\s*min)?$/i.test(v)?"Sans cuisson":v}
 function net(t,nom){var u=noLinks(t);return u?nettoyerLigne_(u,nom):""}
 function loadFiches(){
   try{var c=JSON.parse(localStorage.getItem("recettes-fiches")||"null");if(c&&c.f)fiches=c.f}catch(e){}
@@ -243,21 +249,23 @@ function showRecipe(r,silent){
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Retour aux recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
     var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);return b}
   box.appendChild(bar());
+  if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
   tx.appendChild(el("h2",null,r.name));
+  if(f&&f.r){var rr=net(f.r,"");if(rr)tx.appendChild(el("p","rend",rr))}
   hero.appendChild(tx);
   if(img){var im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){im.remove();hero.classList.add("solo")};hero.appendChild(im)}
   box.appendChild(hero);
   var pills=el("div","rpills");
-  [["CATÉGORIE",r.cat,"#bfe8ee"],["TYPE",r.type,"#cdeccb"],["RÉGION",r.region,"#fff1b8"],["CUISSON",f&&f.cuisson,"#ffd9c7"]].forEach(function(p){
+  (f&&f.m?[["DURÉE PRÉPARATION",duree(f.m.prep),"#bfe8ee"],["CUISSON",cuis(f.m.cuisson),"#ffd9c7"],["NOMBRE DE PERSONNES",vide(f.m.pers),"#cdeccb"],["DIFFICULTÉ",vide(f.m.diff),"#fff1b8"]]:[["CATÉGORIE",r.cat,"#bfe8ee"],["TYPE",r.type,"#cdeccb"],["RÉGION",r.region,"#fff1b8"],["CUISSON",f&&f.cuisson,"#ffd9c7"]]).forEach(function(p){
     if(!p[1]||p[1]==="—")return;var d=el("div","rpill");d.style.background=p[2];d.appendChild(el("small",null,p[0]));d.appendChild(el("b",null,p[1]));pills.appendChild(d)});
   if(pills.children.length)box.appendChild(pills);
   if(f){
-    var s1=el("section","rsec");s1.appendChild(el("h3",null,nettoyerTitre_(f.ingTitle,"Ingrédients")));
+    var s1=el("section","rsec");s1.appendChild(el("h3",null,titreIngredients_(f.ingTitle)));
     var ib=el("div","rbox rcols"),ul=null;
     (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
     s1.appendChild(ib);box.appendChild(s1);
-    var s2=el("section","rsec");s2.appendChild(el("h3",null,nettoyerTitre_(f.prepTitle,"Préparation")));
+    var s2=el("section","rsec");s2.appendChild(el("h3",null,"Préparation"));
     var st=el("div","rsteps"),k=0;
     (f.steps||[]).forEach(function(x){var t=net(x.t,r.name);if(!t)return;if(x.l){st.appendChild(el("p","rlabel",t))}else{k++;var d=el("div","rstep");d.appendChild(el("span","rnum",String(k)));d.appendChild(el("p",null,t));st.appendChild(d)}});
     var skipO=false;
