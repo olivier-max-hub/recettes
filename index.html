@@ -93,6 +93,9 @@ body{padding-bottom:var(--bar)}
 #recipe{padding:0 16px 16px}
 .chefbtn{background:#fff1b8;color:#0b4f59;border-color:#e0c25a;font-weight:700}
 .chefline{margin:0 0 12px}
+/* boutons « Son » et « Enchaîner » du lecteur du chef : bien visibles quand ils sont activés */
+.cv-modal .cv-opts .cv-ctl[aria-pressed="true"]{background:#0f6b78;border-color:#0f6b78;color:#fff;font-weight:700;box-shadow:0 2px 6px rgba(15,107,120,.35)}
+.cv-modal .cv-opts .cv-ctl[aria-pressed="false"]{background:#fff;border:1px dashed #9db4b9;color:#6b7c80;font-weight:400;box-shadow:none}
 .rband{background:var(--acc);color:#fff;text-align:center;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border-radius:22px 22px 8px 8px;margin-bottom:8px}
 #recipe[hidden]{display:none}
 body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-recipe .sub{display:none}
