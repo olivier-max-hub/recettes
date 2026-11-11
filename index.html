@@ -194,8 +194,10 @@ function infosCarte(r){
 function renderList(){var box=$("list");box.textContent="";
   if(isMobile()&&cat==="Tout"&&!query.trim()){renderCats(box);return}
   if(isMobile()&&cat!=="Tout")box.appendChild(backBar());
-  var q=slug(query).replace(/-/g," ");
-  var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||slug(r.name+" "+r.type+" "+r.region).replace(/-/g," ").indexOf(q)>=0)});
+  /* recherche : « bœuf » = « boeuf », « cœur » = « coeur » (les ligatures œ/æ sont dépliées des deux côtés) */
+  var srch=function(t){return slug(String(t||"").replace(/œ/g,"oe").replace(/Œ/g,"Oe").replace(/æ/g,"ae").replace(/Æ/g,"Ae")).replace(/-/g," ")};
+  var q=srch(query);
+  var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
   if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent="Aucune recette ne correspond.";box.appendChild(p);return}
   var groups={},order=[];items.forEach(function(r){var k=cat==="Tout"?"":r.cat;if(!groups[k]){groups[k]=[];order.push(k)}groups[k].push(r)});
   order.forEach(function(c){
