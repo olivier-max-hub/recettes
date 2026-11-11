@@ -104,6 +104,8 @@ body{padding-bottom:var(--bar)}
 #recipe[hidden]{display:none}
 body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-recipe .sub{display:none}
 .rbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+.coursesline{margin:12px 0 0}
+.coursesline .btn.alt{background:#fff}
 .rhero{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center;background:var(--pale,#eef8fb);border-radius:26px;padding:18px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
 .rhero.solo{grid-template-columns:1fr}
 .rhero .rend{color:var(--acc);font-size:1.15rem;margin:6px 0 0}
@@ -331,6 +333,41 @@ function loadFiches(){
     if(current)showRecipe(current,true)
   }).catch(function(){})
 }
+/* ---------- liste de courses Cookapli (même site : stockage partagé avec Friscan et Cookapli) ---------- */
+var ckIngP=null;
+function ckLoadING(cb){if(typeof ING!=="undefined")return cb();
+  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=9";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  ckIngP.then(cb,function(){cb()})}
+function ckNorm(t){return " "+String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/œ/g,"oe").replace(/[^a-z0-9]+/g," ").trim()+" "}
+function ckGuess(t){if(typeof ING==="undefined")return null;var txt=ckNorm(t),best=null,bi=1e9,bl=0;
+  Object.keys(ING).forEach(function(id){ING[id].k.forEach(function(k){var pat=" "+ckNorm(k).trim()+(k.slice(-1)===" "?" ":"");var i=txt.indexOf(pat);if(i>=0&&(i<bi||(i===bi&&pat.length>bl))){best=id;bi=i;bl=pat.length}})});
+  return best}
+var CK_VERB=/^(pelez|coupez|versez|ajoutez|faites|dans|baissez|epluchez|mettre|mettez|laver|lavez|couper|emincer|emincez|ajouter|verifier|portez|laissez|servez|bout|passer|remettre|blanchir|verser|melanger|melangez|prechauffer|prechauffez|faire|cuire|reserver)( |$)/;
+function coursesBtn(r,f){var w=el("p","coursesline"),b=el("button","btn","🛒 Ajouter les ingrédients à ma liste de courses");b.type="button";
+  b.onclick=function(){b.disabled=true;ckLoadING(function(){ckAddRecipe(r,f,w)})};w.appendChild(b);return w}
+function ckAddRecipe(r,f,w){
+  var has=typeof ING!=="undefined",fr=[],pl=null,l=[];
+  try{fr=JSON.parse(localStorage.getItem("friscan.fridge")||"[]")}catch(e){}
+  try{pl=JSON.parse(localStorage.getItem("friscan.placard")||"null")}catch(e){}
+  try{l=JSON.parse(localStorage.getItem("cookapli.courses")||"[]")}catch(e){}
+  if(!Array.isArray(fr))fr=[];if(!Array.isArray(l))l=[];
+  if(!Array.isArray(pl))pl=has&&typeof PLACARD_DEFAUT!=="undefined"?PLACARD_DEFAUT:[];
+  var eq=has&&typeof SUBST!=="undefined"?SUBST:{};
+  function have(id){return [id].concat(eq[id]||[]).some(function(x){return pl.indexOf(x)>=0||fr.some(function(p){return p.ing===x})})}
+  var added=0,skipped=0;
+  (f.ing||[]).forEach(function(it){
+    if(it.l)return;var t=net(it.t,"");if(!t)return;var n=ckNorm(t).trim();
+    if(!n||n.split(" ").length>16||CK_VERB.test(n)||/facultati|optionnel|pour servir/.test(n))return;
+    var id=ckGuess(t);if(id&&have(id)){skipped++;return}
+    var same=l.filter(function(x){return !x.done&&(id?x.ing===id:!x.ing&&ckNorm(x.name)===ckNorm(t))})[0];
+    if(same){if(same.qty.indexOf(t)<0)same.qty.push(t);if(same.src.indexOf(r.name)<0)same.src.push(r.name)}
+    else l.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:id?ING[id].n:t,raw:t,ing:id||null,qty:[t],src:[r.name],done:false,added:Date.now()});
+    added++});
+  try{localStorage.setItem("cookapli.courses",JSON.stringify(l))}catch(e){}
+  var plur=function(n,a,b){return n+" "+(n>1?b:a)};
+  toast(added?plur(added,"ingrédient ajouté","ingrédients ajoutés")+" à ta liste de courses"+(skipped?" ("+plur(skipped,"déjà dans tes réserves","déjà dans tes réserves")+")":""):"Tu as déjà tout dans tes réserves");
+  track("courses",r.name);
+  w.textContent="";var a=el("a","btn alt",added?"✓ Ajouté · Voir ma liste de courses":"Voir ma liste de courses");a.href="../cookapli/courses.html";w.appendChild(a)}
 function showRecipe(r,silent){
   if(!silent){track("recette",r.name);window.scrollTo(0,0)}
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
@@ -354,7 +391,7 @@ function showRecipe(r,silent){
     var s1=el("section","rsec");s1.appendChild(el("h3",null,titreIngredients_(f.ingTitle)));
     var ib=el("div","rbox rcols"),ul=null;
     (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
-    s1.appendChild(ib);box.appendChild(s1);
+    s1.appendChild(ib);s1.appendChild(coursesBtn(r,f));box.appendChild(s1);
     var s2=el("section","rsec");s2.appendChild(el("h3",null,"Préparation"));
     if((f.steps||[]).length){var cl=el("p","chefline"),cb2=el("button","btn chefbtn","▶ Suivre ces étapes avec Léa ou Hugo");cb2.type="button";cb2.onclick=function(){chefOuvrir(r,f,0)};cl.appendChild(cb2);s2.appendChild(cl)}
     var st=el("div","rsteps"),k=0;
