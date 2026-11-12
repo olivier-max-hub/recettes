@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mes recettes</title>
+<title>Livre de recettes</title>
 <meta name="theme-color" content="#0f6b78">
 <meta name="color-scheme" content="only light">
 <meta name="supported-color-schemes" content="light">
@@ -149,7 +149,7 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 <body>
 <header><div class="wrap">
 <a class="home" href="../cookapli/" aria-label="Retour à l’accueil Cookapli">← Cookapli</a>
-<h1>Mes recettes</h1>
+<h1>Livre de recettes</h1>
 <p class="sub" id="status">Chargement…</p>
 <input type="search" id="q" placeholder="Rechercher une recette" aria-label="Rechercher une recette">
 <div class="chips" id="chips"></div>
@@ -491,7 +491,7 @@ window.addEventListener("hashchange",route);
 $("q").addEventListener("input",function(e){query=e.target.value;renderList()});
 $("shareLink").addEventListener("click",function(e){e.preventDefault();track("partage","site");var url=location.origin+location.pathname;
   var fb=function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(function(){toast("Lien du site copié")},function(){toast("Partage indisponible")});else toast("Partage indisponible")};
-  if(navigator.share)navigator.share({title:"Mes recettes",text:"Mes recettes",url:url}).catch(function(x){if(!x||x.name!=="AbortError")fb()});else fb()});
+  if(navigator.share)navigator.share({title:"Livre de recettes",text:"Livre de recettes",url:url}).catch(function(x){if(!x||x.name!=="AbortError")fb()});else fb()});
 
 function setup(){var p=document.createElement("div");p.className="msg";
   p.innerHTML="<b>Dernière étape :</b> dans ta feuille Google Sheets, va dans <i>Fichier, Partager, Publier sur le Web</i>, choisis l’onglet « Liste de recettes » et le format « Valeurs séparées par des virgules (.csv) », puis clique sur Publier. Colle le lien obtenu dans <code>CSV_URL</code> au début du script de ce fichier.";
