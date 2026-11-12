@@ -57,7 +57,16 @@ h2{font:600 1.15rem "Economica","Arial Narrow",Arial,sans-serif;margin:22px 0 10
 .msg code{background:var(--card);padding:1px 6px;border-radius:5px;word-break:break-all}
 .btn{border:1px solid var(--acc);background:var(--acc);color:var(--on);padding:9px 22px;border-radius:99px;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}
 .btn.alt{background:transparent;color:var(--acc)}
-.cm{margin-top:18px;padding:18px;background:var(--card);border:1px solid var(--line);border-radius:22px;display:grid;gap:10px}
+.cm{margin-top:18px;display:grid;gap:10px;justify-items:center}
+.cm.open{justify-items:stretch;padding:18px;background:var(--card);border:1px solid var(--line);border-radius:22px}
+/* Commentaire replié : seul « Laisser un commentaire » est visible (même format sur toutes les pages Cookapli) */
+.cm-toggle{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:6px 2px;font:700 1.2rem "Economica","Arial Narrow",Arial,sans-serif;color:var(--acc);text-decoration:underline;text-underline-offset:4px;cursor:pointer;text-align:left}
+.cm.open .cm-toggle{justify-self:start;text-decoration:none}
+.cm-toggle .chev{display:inline-block;transition:transform .2s}.cm.open .cm-toggle .chev{transform:rotate(180deg)}
+.cm-body{display:grid;gap:10px}.cm-body[hidden]{display:none}
+.cm-body .note:empty{display:none}
+footer .cm p.cm-privacy,.cm-privacy{max-width:none;margin:4px 0 0;padding:10px 12px;background:#e3f6f8;border-left:4px solid var(--acc);border-radius:10px;color:#000;font-weight:700;font-size:.95rem;line-height:1.35;text-align:left}
+footer .cm p.note{background:none;padding:0;text-align:left;max-width:none;margin:0}
 .cm h4{margin:0;font:600 1.1rem "Economica","Arial Narrow",Arial,sans-serif}
 .cm input,.cm textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:16px;font:inherit;background:#fff;color:var(--ink)}
 .cm .btn{justify-self:start}
@@ -147,7 +156,7 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 </div></header>
 <main><div class="wrap" id="list"></div></main>
 <section id="recipe" hidden><div class="wrap" id="rp"></div></section>
-<footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail sert uniquement à te répondre et à t’envoyer un e-mail de remerciement, puis elle est supprimée du tableau des commentaires après 24 heures. Ton message n’est ni affiché sur le site ni partagé avec d’autres personnes, et tu peux demander sa suppression à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.</p></footer>
+<footer id="legal" hidden></footer>
 <div id="sharebar" hidden><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
@@ -419,14 +428,17 @@ function leaveRecipe(){
   hideRecipe();var keep=isMobile()&&cat!=="Tout"?"#categorie-"+slug(cat):"";history.replaceState(null,"",location.pathname+location.search+keep)
 }
 function commentBox(r){var w=document.createElement("form");w.className="cm";
-  var h=document.createElement("h4");h.textContent="Laisser un commentaire";
+  var h=document.createElement("button");h.type="button";h.className="cm-toggle";h.setAttribute("aria-expanded","false");h.setAttribute("aria-controls","cmBody");h.innerHTML='<span aria-hidden="true">💬</span> Laisser un commentaire <span class="chev" aria-hidden="true">▾</span>';
+  var bd=document.createElement("div");bd.className="cm-body";bd.id="cmBody";bd.hidden=true;
   var e=document.createElement("input");e.type="email";e.required=true;e.maxLength=200;e.autocomplete="email";e.placeholder="Ton adresse e-mail";e.setAttribute("aria-label","Adresse e-mail");
   var t=document.createElement("textarea");t.required=true;t.rows=4;t.maxLength=1000;t.placeholder="Ton commentaire";t.setAttribute("aria-label","Commentaire");
   var hp=document.createElement("input");hp.type="text";hp.tabIndex=-1;hp.autocomplete="off";hp.className="hp";hp.setAttribute("aria-hidden","true");
-  var n=document.createElement("p");n.className="note";n.textContent="Ton commentaire et ton adresse restent privés : aucun autre visiteur ne les voit. Ton adresse est supprimée du tableau des commentaires après 24 heures. Tu recevras un e-mail de remerciement.";
+  var n=document.createElement("p");n.className="cm-privacy";n.textContent="Confidentialité : ton commentaire et ton adresse e-mail restent privés, aucun autre visiteur ne les voit. Ton adresse sert uniquement à te répondre et à t’envoyer un e-mail de remerciement, puis elle est supprimée après 24 heures. Tu peux demander la suppression de ton message à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.";
   var b=document.createElement("button");b.className="btn";b.type="submit";b.textContent="Envoyer";
   var s=document.createElement("p");s.className="note";s.setAttribute("role","status");
-  [h,e,t,hp,n,b,s].forEach(function(x){w.appendChild(x)});
+  [e,t,hp,b,s,n].forEach(function(x){bd.appendChild(x)});w.appendChild(h);w.appendChild(bd);
+  w.cmOpen=function(o){bd.hidden=!o;w.classList.toggle("open",o);h.setAttribute("aria-expanded",String(o))};
+  h.onclick=function(){var o=bd.hidden;w.cmOpen(o);if(o)setTimeout(function(){e.focus({preventScroll:true})},50)};
   w.onsubmit=function(ev){ev.preventDefault();if(hp.value)return;
     var last=0;try{last=+localStorage.getItem("recettes-cm")||0}catch(x){}
     if(Date.now()-last<30000){s.textContent="Patiente quelques secondes avant d’envoyer un autre message.";return}
@@ -491,7 +503,7 @@ function load(){
     show(csv(t),", à jour à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))
   }).catch(function(){var t=null;try{t=localStorage.getItem("recettes-csv")}catch(e){}
     if(t)show(csv(t),", hors connexion");else{$("list").textContent="";var p=document.createElement("p");p.className="msg";p.textContent="La liste n’a pas pu être chargée. Vérifie la connexion puis recharge la page.";$("list").appendChild(p);$("status").textContent="Liste indisponible"}})}
-function goComment(ev){ev.preventDefault();var f=$("commentaire");if(!f)return;
+function goComment(ev){ev.preventDefault();var f=$("commentaire");if(!f)return;if(f.cmOpen)f.cmOpen(true);
   var calm=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
   f.scrollIntoView({behavior:calm?"auto":"smooth",block:"center"});
   if(window.matchMedia&&matchMedia("(min-width:700px)").matches)setTimeout(function(){var i=f.querySelector("input");if(i)i.focus({preventScroll:true})},500)}
