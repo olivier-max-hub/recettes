@@ -89,11 +89,12 @@ header .wrap{position:relative}
 .cpill{flex:1;max-width:100%;text-align:center;font-size:1.4rem;line-height:1.15;color:#0b4f59;padding:8px 18px;border-radius:99px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
 .backbar .btn.alt{background:var(--acc);border-color:var(--acc);color:#fff}
 @media (max-width:699px){#chips{display:none}}
-:root{--bar:34px}
+:root{--bar:0px} /* barre « Partager » désactivée pour l'instant (à remettre plus tard sur l'accueil Cookapli) */
 body{padding-bottom:var(--bar)}
 #sharebar{position:fixed;left:0;right:0;bottom:0;z-index:12;height:calc(var(--bar) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:center;background:var(--acc);box-shadow:0 -2px 10px rgba(0,0,0,.15)}
 #sharebar a{color:#fff;font-weight:700;font-size:1.1rem;line-height:1;text-align:center;text-decoration:underline;text-underline-offset:3px;padding:6px 24px}
 #sharebar a:focus-visible{outline-color:#fff}
+#sharebar[hidden]{display:none}
 #recipe{padding:0 16px 16px}
 .chefbtn{background:#fff1b8;color:#0b4f59;border-color:#e0c25a;font-weight:700}
 .chefline{margin:0 0 12px}
@@ -147,7 +148,7 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 <main><div class="wrap" id="list"></div></main>
 <section id="recipe" hidden><div class="wrap" id="rp"></div></section>
 <footer id="legal" hidden><p>Confidentialité : si tu laisses un commentaire, ton adresse e-mail sert uniquement à te répondre et à t’envoyer un e-mail de remerciement, puis elle est supprimée du tableau des commentaires après 24 heures. Ton message n’est ni affiché sur le site ni partagé avec d’autres personnes, et tu peux demander sa suppression à tout moment en me contactant. Le site mesure aussi sa fréquentation de façon anonyme (pages consultées, type d’appareil), sans cookie ni donnée personnelle.</p></footer>
-<div id="sharebar"><a href="." id="shareLink">Partager</a></div>
+<div id="sharebar" hidden><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
 <script>
