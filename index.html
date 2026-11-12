@@ -115,6 +115,7 @@ body{padding-bottom:var(--bar)}
 #recipe[hidden]{display:none}
 body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-recipe .sub{display:none}
 .rbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+.rbar .chefrow{flex-basis:100%;display:flex;justify-content:center} /* « Voir la recette avec un chef » centré */
 .coursesline{margin:12px 0 0}
 .coursesline .btn.alt{background:#fff}
 .rhero{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center;background:var(--pale,#eef8fb);border-radius:26px;padding:18px;box-shadow:0 3px 10px rgba(0,0,0,.08)}
@@ -386,7 +387,7 @@ function showRecipe(r,silent){
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Livre de recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
-    if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};b.appendChild(cb)}return b}
+    if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};var cw=el("div","chefrow");cw.appendChild(cb);b.appendChild(cw)}return b}
   box.appendChild(bar());
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
