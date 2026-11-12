@@ -385,8 +385,7 @@ function showRecipe(r,silent){
   if(!silent){track("recette",r.name);window.scrollTo(0,0)}
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
-  function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Retour aux recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
-    var sh=el("button","btn","Partager");sh.type="button";sh.onclick=function(){share(r)};b.appendChild(sh);
+  function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Livre de recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
     if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};b.appendChild(cb)}return b}
   box.appendChild(bar());
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
@@ -421,7 +420,7 @@ function showRecipe(r,silent){
     if(id){var fr=el("iframe","rframe");fr.src="https://docs.google.com/document/d/"+id+"/preview";fr.title=r.name;fr.loading="lazy";box.appendChild(fr)}
     else box.appendChild(el("p","rbox","Cette recette n’a pas encore de fiche associée."));
   }
-  var fin=el("div","rbar");var b2=el("a","btn alt","← Retour aux recettes");b2.href="#";b2.onclick=function(e){e.preventDefault();leaveRecipe()};fin.appendChild(b2);box.appendChild(fin);
+  var fin=el("div","rbar");var b2=el("a","btn alt","← Livre de recettes");b2.href="#";b2.onclick=function(e){e.preventDefault();leaveRecipe()};fin.appendChild(b2);box.appendChild(fin);
 }
 function hideRecipe(){current=null;document.body.classList.remove("view-recipe");$("recipe").hidden=true}
 function leaveRecipe(){
