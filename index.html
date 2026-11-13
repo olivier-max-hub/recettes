@@ -128,6 +128,11 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 .rpill{border-radius:20px;padding:10px 12px;text-align:center;color:#0b4f59}
 .rpill small{display:block;font-size:.8rem;letter-spacing:.05em;color:#000;font-weight:700}
 .rpill b{font-size:1.45rem;line-height:1.2}
+.pers{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:2px}
+.persbtn{width:34px;height:34px;border-radius:50%;border:2px solid #0b4f59;background:#fff;color:#0b4f59;font:700 1.3rem/1 Economica,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.persbtn:disabled{opacity:.35;cursor:default}
+.persbtn:focus-visible{outline:3px solid #0f6b78;outline-offset:2px}
+.persnote{margin:8px 0 0;color:#000;font-weight:700;font-size:.95rem}
 .rsec h3{color:var(--acc);font-size:1.75rem;margin:20px 0 8px}
 .rbox{background:#eef8fb;border-radius:22px;padding:16px 22px}
 .rcols{column-count:2;column-gap:30px}
@@ -277,6 +282,35 @@ function nettoyerTitre_(t, defaut) {
 
 function titreIngredients_(){return "Ingrédients"}
 function vide(v){v=String(v||"").trim();return /^[-–—]*$/.test(v)?"":v}
+/* Nombre de personnes : recalcule les quantités d'une ligne d'ingrédient
+   (nombre en début de ligne, ou après « : » comme « Sel fin : 2 g »). */
+var Q_FR={"½":.5,"¼":.25,"¾":.75,"⅓":1/3,"⅔":2/3};
+var Q_RE="(\\d+\\s*[½¼¾⅓⅔]|\\d+\\/\\d+|\\d+(?:[.,]\\d+)?|[½¼¾⅓⅔])";
+function qNum(s){s=s.trim();var m;
+  if(m=s.match(/^(\d+)\s*([½¼¾⅓⅔])$/))return +m[1]+Q_FR[m[2]];
+  if(Q_FR[s]!=null)return Q_FR[s];
+  if(m=s.match(/^(\d+)\/(\d+)$/))return m[2]>0?m[1]/m[2]:null;
+  var v=parseFloat(s.replace(",","."));return isNaN(v)?null:v}
+function qFmt(v,unit){
+  if(/^(g|gr|grammes?|mg|ml)$/i.test(unit))return String(v>=100?Math.round(v/5)*5:Math.max(1,Math.round(v)));
+  if(/^(kg|l|cl|dl|litres?)$/i.test(unit)){var d=Math.round(v*100)/100;return String(d).replace(".",",")}
+  if(v>=100)return String(Math.round(v/5)*5);if(v>=10)return String(Math.round(v));
+  var q=Math.round(v*4)/4;if(q===0)q=.25;var e=Math.floor(q),g={0.25:"¼",0.5:"½",0.75:"¾"}[q-e];
+  return g?(e?e+" "+g:g):String(e)}
+function scaleLine(t,k){if(!t||k===1)return t;t=String(t);
+  var re=new RegExp("^(\\s*)"+Q_RE+"(\\s*(?:à|-|–)\\s*"+Q_RE+")?(\\s*([a-zA-Z]+))?");
+  var m=t.match(re);
+  if(m){var unit=m[6]||"",one=function(s){var v=qNum(s);return v==null?s:qFmt(v*k,unit)};
+    var o=qNum(m[4]||m[2]),nv=o==null?null:o*k,rest=(m[5]||"")+t.slice(m[0].length);
+    if(nv!=null&&!/^(g|gr|kg|mg|ml|cl|dl|l|de|d)$/i.test(unit)){
+      rest=rest.replace(/^(\s+)([a-zàâçéèêëîïôûùüÿœ’'-]+)/i,function(all,sp,w){
+        if(o>=2&&nv<2&&/[^s]s$/i.test(w))return sp+w.slice(0,-1);
+        if(o<2&&nv>=2&&!/[sxz]$/i.test(w))return sp+w+"s";return all})}
+    return m[1]+one(m[2])+(m[3]?m[3].replace(m[4],one(m[4])):"")+rest}
+  var re2=new RegExp("(:\\s*)"+Q_RE+"(\\s*(?:à|-|–)\\s*"+Q_RE+")?(\\s*([a-zA-Z]{0,6})\\.?\\s*)$");
+  return t.replace(re2,function(all,c,a,rest,b,tail,unit){var one=function(s){var v=qNum(s);return v==null?s:qFmt(v*k,unit)};
+    return c+one(a)+(rest?rest.replace(b,one(b)):"")+tail})}
+function persBase(p){var m=String(p||"").match(/\d+/);return m?+m[0]:0}
 function duree(v){v=vide(v);if(/^\d+$/.test(v))v+=" min";return v.replace(/\bmn\b\.?/gi,"min")}
 function cuis(v){v=duree(v);return /^0(\s*min)?$/i.test(v)?"Sans cuisson":v}
 function net(t,nom){var u=noLinks(t);return u?nettoyerLigne_(u,nom):""}
@@ -357,9 +391,9 @@ function ckGuess(t){if(typeof ING==="undefined")return null;var txt=ckNorm(t),be
   Object.keys(ING).forEach(function(id){ING[id].k.forEach(function(k){var pat=" "+ckNorm(k).trim()+(k.slice(-1)===" "?" ":"");var i=txt.indexOf(pat);if(i>=0&&(i<bi||(i===bi&&pat.length>bl))){best=id;bi=i;bl=pat.length}})});
   return best}
 var CK_VERB=/^(pelez|coupez|versez|ajoutez|faites|dans|baissez|epluchez|mettre|mettez|laver|lavez|couper|emincer|emincez|ajouter|verifier|portez|laissez|servez|bout|passer|remettre|blanchir|verser|melanger|melangez|prechauffer|prechauffez|faire|cuire|reserver)( |$)/;
-function coursesBtn(r,f){var w=el("p","coursesline"),b=el("button","btn","🛒 Ajouter les ingrédients à ma liste de courses");b.type="button";
-  b.onclick=function(){b.disabled=true;ckLoadING(function(){ckAddRecipe(r,f,w)})};w.appendChild(b);return w}
-function ckAddRecipe(r,f,w){
+function coursesBtn(r,f,kf){var w=el("p","coursesline"),b=el("button","btn","🛒 Ajouter les ingrédients à ma liste de courses");b.type="button";
+  b.onclick=function(){b.disabled=true;ckLoadING(function(){ckAddRecipe(r,f,w,kf?kf():1)})};w.appendChild(b);return w}
+function ckAddRecipe(r,f,w,k){k=k||1;
   var has=typeof ING!=="undefined",fr=[],pl=null,l=[];
   try{fr=JSON.parse(localStorage.getItem("friscan.fridge")||"[]")}catch(e){}
   try{pl=JSON.parse(localStorage.getItem("friscan.placard")||"null")}catch(e){}
@@ -370,7 +404,7 @@ function ckAddRecipe(r,f,w){
   function have(id){return [id].concat(eq[id]||[]).some(function(x){return pl.indexOf(x)>=0||fr.some(function(p){return p.ing===x})})}
   var added=0,skipped=0;
   (f.ing||[]).forEach(function(it){
-    if(it.l)return;var t=net(it.t,"");if(!t)return;var n=ckNorm(t).trim();
+    if(it.l)return;var t=scaleLine(net(it.t,""),k);if(!t)return;var n=ckNorm(t).trim();
     if(!n||n.split(" ").length>16||CK_VERB.test(n)||/facultati|optionnel|pour servir/.test(n))return;
     var id=ckGuess(t);if(id&&have(id)){skipped++;return}
     var same=l.filter(function(x){return !x.done&&(id?x.ing===id:!x.ing&&ckNorm(x.name)===ckNorm(t))})[0];
@@ -382,9 +416,16 @@ function ckAddRecipe(r,f,w){
   toast(added?plur(added,"ingrédient ajouté","ingrédients ajoutés")+" à ta liste de courses"+(skipped?" ("+plur(skipped,"déjà dans tes réserves","déjà dans tes réserves")+")":""):"Tu as déjà tout dans tes réserves");
   track("courses",r.name);
   w.textContent="";var a=el("a","btn alt",added?"✓ Ajouté · Voir ma liste de courses":"Voir ma liste de courses");a.href="../cookapli/courses.html";w.appendChild(a)}
+var persN=0,drawIng=function(){};
+function persStepper(base,onChange){var w=el("div","pers"),n=base,v=el("b",null,String(n));
+  function btn(txt,lab,dn){var b=el("button","persbtn",txt);b.type="button";b.setAttribute("aria-label",lab);
+    b.onclick=function(){var m=Math.min(30,Math.max(1,n+dn));if(m===n)return;n=m;v.textContent=String(n);mo.disabled=n<=1;pl.disabled=n>=30;onChange(n)};return b}
+  var mo=btn("−","Une personne de moins",-1),pl=btn("+","Une personne de plus",1);mo.disabled=n<=1;
+  v.setAttribute("aria-live","polite");w.appendChild(mo);w.appendChild(v);w.appendChild(pl);return w}
 function showRecipe(r,silent){
   if(!silent){track("recette",r.name);window.scrollTo(0,0)}
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
+  persN=f&&f.m?persBase(f.m.pers):0;drawIng=function(){};
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Livre de recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
     if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};var cw=el("div","chefrow");cw.appendChild(cb);b.appendChild(cw)}return b}
@@ -398,13 +439,18 @@ function showRecipe(r,silent){
   box.appendChild(hero);
   var pills=el("div","rpills");
   (f&&f.m?[["DURÉE PRÉPARATION",duree(f.m.prep),"#bfe8ee"],["CUISSON",cuis(f.m.cuisson),"#ffd9c7"],["NOMBRE DE PERSONNES",vide(f.m.pers),"#cdeccb"],["DIFFICULTÉ",vide(f.m.diff),"#fff1b8"]]:[["CATÉGORIE",r.cat,"#bfe8ee"],["TYPE",r.type,"#cdeccb"],["RÉGION",r.region,"#fff1b8"],["CUISSON",f&&f.cuisson,"#ffd9c7"]]).forEach(function(p){
-    if(!p[1]||p[1]==="—")return;var d=el("div","rpill");d.style.background=p[2];d.appendChild(el("small",null,p[0]));d.appendChild(el("b",null,p[1]));pills.appendChild(d)});
+    if(!p[1]||p[1]==="—")return;var d=el("div","rpill");d.style.background=p[2];d.appendChild(el("small",null,p[0]));
+    if(p[0]==="NOMBRE DE PERSONNES"&&f&&persBase(f.m.pers)){d.appendChild(persStepper(persBase(f.m.pers),function(n){persN=n;drawIng()}));pills.appendChild(d);return}
+    d.appendChild(el("b",null,p[1]));pills.appendChild(d)});
   if(pills.children.length)box.appendChild(pills);
   if(f){
     var s1=el("section","rsec");s1.appendChild(el("h3",null,titreIngredients_(f.ingTitle)));
-    var ib=el("div","rbox rcols"),ul=null;
-    (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",t));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,t))}});
-    s1.appendChild(ib);s1.appendChild(coursesBtn(r,f));box.appendChild(s1);
+    var ib=el("div","rbox rcols"),pnote=el("p","persnote");pnote.hidden=true;
+    drawIng=function(){var k=persBase(f.m&&f.m.pers)?persN/persBase(f.m.pers):1,ul=null;ib.textContent="";
+      (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;if(it.l){ib.appendChild(el("p","rlabel",k===1?t:t.replace(/\d+\s*(personnes?)/i,persN+" personne"+(persN>1?"s":""))));ul=null}else{if(!ul){ul=el("ul");ib.appendChild(ul)}ul.appendChild(el("li",null,scaleLine(t,k)))}});
+      pnote.hidden=k===1;pnote.textContent="Quantités calculées pour "+persN+" personne"+(persN>1?"s":"")+". Les quantités écrites dans les étapes restent celles de la recette d'origine ("+vide(f.m.pers)+" personnes)."};
+    s1.appendChild(ib);s1.appendChild(pnote);drawIng();
+    s1.appendChild(coursesBtn(r,f,function(){return persBase(f.m&&f.m.pers)?persN/persBase(f.m.pers):1}));box.appendChild(s1);
     var s2=el("section","rsec");s2.appendChild(el("h3",null,"Préparation"));
     if((f.steps||[]).length){var cl=el("p","chefline"),cb2=el("button","btn chefbtn","▶ Suivre ces étapes avec Léa ou Hugo");cb2.type="button";cb2.onclick=function(){chefOuvrir(r,f,0)};cl.appendChild(cb2);s2.appendChild(cl)}
     var st=el("div","rsteps"),k=0;
