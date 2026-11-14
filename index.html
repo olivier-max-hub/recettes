@@ -150,6 +150,69 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #toast::before{content:"✓";flex:none;width:28px;height:28px;border-radius:50%;background:#0f6b78;color:#fff;display:grid;place-items:center;font-weight:700;font-size:1rem}
 #toast.warn{border-left-color:#e07a4f}#toast.warn::before{content:"!";background:#e07a4f}
+/* ===== Calories, végétarien, Équilibre alimentaire ===== */
+:root{--vert:#1f7a43}
+.ci.kc{background:var(--vert);color:#fff}.ci.kc .k{color:#fff}
+.rpill.kc{background:var(--vert);color:#fff}
+.veg{position:absolute;z-index:2;top:26px;right:8px;transform:rotate(28deg);background:var(--vert);color:#fff;font:700 .7rem/1 "Economica","Arial Narrow",Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:7px;border:1.5px solid rgba(255,255,255,.9);box-shadow:0 2px 6px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap}
+.vegrow{display:flex;justify-content:center;padding:6px 8px;background:#fff}
+.vegtag{background:var(--vert);color:#fff;font:700 .72rem/1 "Economica","Arial Narrow",Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:5px 16px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.veg.big{font-size:1.05rem;padding:6px 18px;top:38px;right:14px;border-radius:9px;border-width:2px}
+.rhero{position:relative;overflow:hidden}
+.rimg{position:relative;overflow:hidden;border-radius:20px}
+@media (max-width:699px){.rhero .rimg{order:-1}}
+.card{position:relative}
+.card.picked{outline:4px solid var(--vert);outline-offset:-2px}
+.card.picked::after{content:"✓";position:absolute;top:8px;left:8px;z-index:3;width:34px;height:34px;border-radius:50%;background:var(--vert);color:#fff;display:grid;place-items:center;font-weight:700;font-size:1.2rem;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.btn.vbtn{background:var(--vert);border-color:var(--vert);color:#fff;font-weight:700}
+.btn.vbtn:disabled{opacity:.55;cursor:default}
+#pickgo{position:fixed;left:0;right:0;bottom:calc(var(--bar) + env(safe-area-inset-bottom,0px));z-index:13;display:none;gap:10px;flex-wrap:wrap;justify-content:center;padding:10px 12px;background:rgba(255,255,255,.96);box-shadow:0 -2px 10px rgba(0,0,0,.12)}
+body.picking:not(.view-recipe) #pickgo{display:flex}
+body.picking main{padding-bottom:90px}
+body.picking #chips{display:none}
+body.picking .chef-f{display:none}
+.chip.chipeq{background:var(--vert);border-color:var(--vert);font-weight:700}
+.catb.cateq{background:linear-gradient(135deg,#2e9a5a,var(--vert))!important;color:#fff}
+.catb.cateq:focus-visible{outline-color:#fff}
+#eq{padding:16px}
+#eq[hidden]{display:none}
+body.view-eq main,body.view-eq #q,body.view-eq #chips,body.view-eq .sub{display:none}
+.eqwarn{max-width:640px;margin:0 auto 6px;background:#fff8e1;border:2px solid #e0c25a;border-radius:18px;padding:12px 16px}
+.eqwarn b{display:block;font-size:1.15rem;color:#7a5600}
+.eqwarn p{margin:4px 0 0}
+h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
+.eqmenu{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;max-width:640px;margin:0 auto}
+.eqrow{display:flex;gap:8px;align-items:center}
+.eqt{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:96px;padding:14px 22px;border-radius:24px;text-decoration:none;color:#0b4f59;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.eqt b{display:block;font-size:1.75rem;line-height:1.1;overflow-wrap:break-word}
+.cpill.eqp{font-size:1.15rem}
+@media (max-width:420px){.eqt b{font-size:1.55rem}.eqt .ill{font-size:2.8rem}}
+.eqt small{display:block;font-size:1rem;color:#000;font-weight:700}
+.eqt .lab{display:block;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#000;font-weight:700}
+.eqt .kc{display:inline-block;margin-top:6px;background:var(--vert);color:#fff;font-weight:700;padding:3px 12px;border-radius:99px}
+.eqt .chg{font-size:.85rem;margin-top:2px}
+.eqt .ill{font-size:3.4rem;line-height:1;flex:none}
+.eqt:focus-visible{outline:3px solid #0b4f59;outline-offset:2px}
+.eqx{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid #b3261e;background:#fff;color:#b3261e;font:700 1.1rem/1 Arial,sans-serif;cursor:pointer}
+.eqtot{max-width:640px;margin:16px auto 6px;background:var(--vert);color:#fff;border-radius:20px;padding:14px 18px;text-align:center}
+.eqtot span,.eqtot small{display:block}
+.eqtot b{display:block;font-size:1.7rem;line-height:1.2}
+.eqbtns{text-align:center;margin:10px 0}
+.eqinfo{max-width:640px;margin:16px auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px 18px}
+.eqinfo b{font-size:1.15rem}
+.eqinfo ul{margin:6px 0;padding-left:20px}
+.eqinfo p{margin:6px 0 0}
+.eqinfo .src{font-size:.9rem;color:#000;font-weight:700}
+.eqinfo a{color:var(--acc)}
+.kdet{margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px 16px}
+.kdet summary{cursor:pointer;font-weight:700;color:var(--vert)}
+.kdet p{margin:8px 0 0}
+.kdet table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.95rem}
+.kdet td{padding:3px 6px;border-top:1px solid var(--line);vertical-align:top}
+.kdet td.n{text-align:right;white-space:nowrap}
+.kdet .x{color:#000;font-weight:700;font-style:italic}
+.kdet .note{font-weight:700}
+.rpill.kc small{color:#fff}
 </style>
 </head>
 <body>
@@ -163,6 +226,8 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 </div></header>
 <main><div class="wrap" id="list"></div></main>
 <section id="recipe" hidden><div class="wrap" id="rp"></div></section>
+<section id="eq" hidden><div class="wrap" id="eqp"></div></section>
+<div id="pickgo" role="region" aria-label="Valider le choix"></div>
 <footer id="legal" hidden></footer>
 <div id="sharebar" hidden><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
@@ -191,17 +256,344 @@ function imgUrl(u){if(!u)return"";var m=u.match(/drive\.google\.com\/(?:file\/d\
 function toast(m){var t=$("toast");t.textContent=m;t.classList.toggle("warn",/impossible|refus|indisponible|échou|erreur|n’a pas pu|n'a pas pu/i.test(m));t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2400)}
 
 function csv(t){var rows=[],r=[],f="",q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==","){r.push(f);f=""}else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";rows.push(r);r=[]}else f+=c}if(f!==""||r.length){r.push(f);rows.push(r)}return rows}
-function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;out.push({cat:c,name:name,type:(row[3]||"").trim(),region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:(row[6]||"").trim(),slug:slug(name)})});return out}
+function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;var type=(row[3]||"").trim();
+  /* « Plat », « Plat unique » et « Plat unique Végétarien » forment une seule rubrique « Plat » ; la mention végétarien est gardée à part */
+  var veg=/vegetarien|vegan|(^|-)vege(-|$)/.test(slug(c)+"-"+slug(type)+"-"+slug(name));if(/^plat(-|$)/.test(slug(c)))c="Plat";
+  out.push({cat:c,name:name,type:type,region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:(row[6]||"").trim(),veg:veg,slug:slug(name)})});return out}
+
+/* ================= Estimation des calories (outil indicatif, sans aucune valeur médicale) =================
+   Chaque ligne d'ingrédient est lue (quantité + unité + aliment), convertie en grammes, puis multipliée par une valeur
+   moyenne en kcal pour 100 g (ordres de grandeur inspirés de la table Ciqual). Le total est divisé par le nombre de personnes.
+   Pour corriger une valeur ou ajouter un aliment, il suffit de modifier la liste ALIM ci-dessous. */
+/* A(motif sans accents, kcal pour 100 g, options) — p : poids d'une pièce (g) ; d : densité (g/ml) ; cs : g par cuillère à soupe ;
+   kv : kcal pour 100 ml quand l'aliment est mesuré en volume ; u : poids (ou ml pour brique/verre) d'une unité particulière ; neg : négligeable */
+function A(re,k,o){o=o||{};o.re=re;o.k=k;return o}
+var ALIM=[
+ A(/vinaigre balsamique|creme de balsamique|\bbalsamique/,100,{cs:15,d:1.1}),
+ A(/vinaigre/,20,{cs:15,d:1}),
+ A(/bouillon|fond de (?:veau|volaille|boeuf)|fumet/,250,{kv:5,cs:10,u:{cube:10,tablette:10,sachet:10}}),
+ A(/thon a l'huile/,190,{u:{boite:140}}),
+ A(/sardines?|maquereaux?/,200,{p:40,u:{boite:100}}),
+ A(/anchois/,200,{p:4}),
+ A(/tomates? sechees?/,250,{p:8}),
+ A(/beurre de cacahuetes?|beurre d'arachide|peanut butter/,600,{cs:16}),
+ A(/(?<!a l')\bhuile/,900,{d:.92,cs:13,u:{filet:5,trait:5}}),
+ A(/petits? beurres?/,450,{p:8,u:{paquet:200}}),
+ A(/\bbeurre/,745,{cs:15,u:{noix:10,noisette:5,plaquette:250}}),
+ A(/margarine/,700,{cs:15,u:{noix:10,noisette:5}}),
+ A(/saindoux|graisse de canard|graisse d'oie/,900,{cs:13}),
+ A(/chocolat blanc/,560,{u:{tablette:100,carre:5}}),
+ A(/chocolat|pepites/,540,{u:{tablette:200,carre:5}}),
+ A(/cacao/,380,{cs:7}),
+ A(/nutella|pate a tartiner/,540,{cs:20}),
+ A(/creme de coco|lait de coco/,190,{d:1,u:{boite:400,brique:200}}),
+ A(/creme de marrons?/,240,{cs:20,u:{boite:250}}),
+ A(/\bcreme\b.*(?:legere|allegee|15 ?%|light)/,150,{d:1,cs:15,u:{brique:200,pot:200}}),
+ A(/\bcreme\b(?! (?:de |d'|glacee|anglaise|patissiere|brulee|dessert))/,290,{d:1,cs:15,u:{brique:200,pot:200}}),
+ A(/lait concentre/,330,{d:1.3,u:{boite:397}}),
+ A(/lait en poudre/,500,{cs:8}),
+ A(/lait d'amande|lait d'avoine|lait de soja|lait de riz|boisson vegetale/,40,{d:1,u:{brique:1000}}),
+ A(/lait entier/,65,{d:1.03,u:{brique:1000}}),
+ A(/\blait\b/,47,{d:1.03,u:{brique:1000}}),
+ A(/fromage blanc|faisselle/,75,{cs:20,u:{pot:500}}),
+ A(/skyr/,60,{p:150,u:{pot:150}}),
+ A(/yaourt grec|yaourt a la grecque/,120,{p:150,u:{pot:150}}),
+ A(/yaourt|yogourt|yoghourt/,60,{p:125,u:{pot:125}}),
+ A(/petits?[- ]suisses?/,140,{p:60}),
+ A(/mascarpone/,420,{cs:20,u:{pot:250,barquette:250}}),
+ A(/ricotta/,140,{cs:20,u:{pot:250}}),
+ A(/mozzarella/,250,{p:125,u:{boule:125,sachet:125}}),
+ A(/burrata/,300,{p:125}),
+ A(/parmesan|parmigiano|grana padano|pecorino/,390,{cs:6}),
+ A(/gruyere|emmental|comte|beaufort|fromage rape|cheddar|gouda|mimolette|abondance|cantal|tomme/,390,{cs:6,u:{tranche:20}}),
+ A(/\bfeta/,265,{p:200,u:{bloc:200,paquet:200}}),
+ A(/chevre/,300,{p:150,u:{buche:180,crottin:60,tranche:15,rondelle:15}}),
+ A(/roquefort|\bbleus?\b|gorgonzola|fourme/,360,{}),
+ A(/camembert|\bbrie\b|coulommiers|reblochon|munster|maroilles|vacherin|mont d'or/,310,{p:250,u:{tranche:20}}),
+ A(/raclette/,340,{u:{tranche:30}}),
+ A(/fromage frais|philadelphia|st moret|saint moret|cream cheese|carre frais|boursin|kiri|vache qui rit/,250,{cs:20,u:{pot:150,boite:150}}),
+ A(/fromage/,330,{u:{tranche:20}}),
+ A(/vin (?:blanc|rouge|rose)|\bvins?\b|porto|madere|martini/,80,{d:1,u:{verre:150}}),
+ A(/cidre|bieres?/,45,{d:1}),
+ A(/cognac|rhum|armagnac|calvados|whisky|vodka|kirsch|grand marnier|cointreau|amaretto|liqueur|alcool|eau[- ]de[- ]vie/,230,{d:.95}),
+ A(/jus d'oranges?|jus de pommes?|jus de fruits?|jus d'ananas|jus de raisin/,45,{d:1}),
+ A(/jus de citron/,25,{d:1}),
+ A(/jaunes? d'?oeufs?|\bjaunes?\b/,330,{p:18}),
+ A(/blancs? d'?oeufs?|^blancs?\b|\bblancs?$/,47,{p:33}),
+ A(/\boeufs?\b/,140,{p:55}),
+ A(/fecule|maizena|amidon/,350,{cs:10,d:.6}),
+ A(/farine/,345,{cs:10,d:.55}),
+ A(/sucre glace/,400,{cs:8,d:.55}),
+ A(/sucre vanill/,400,{cs:12,u:{sachet:7.5}}),
+ A(/sucre|cassonade|vergeoise|rapadura|muscovado/,400,{cs:13,d:.85,u:{morceau:5}}),
+ A(/\bmiel/,320,{cs:20,d:1.4}),
+ A(/sirop/,270,{cs:20,d:1.3}),
+ A(/confiture|gelee de|marmelade/,250,{cs:20,u:{pot:350}}),
+ A(/levure (?:de )?boulang|levure fraiche|levure seche|levure du boulanger/,100,{u:{sachet:8,cube:42}}),
+ A(/gelatine|agar/,340,{u:{feuille:2,sachet:2}}),
+ A(/amandes?/,620,{cs:8,p:1.2}),
+ A(/noisettes?/,650,{cs:8,p:1.5}),
+ A(/noix de coco|\bcoco\b/,650,{cs:6}),
+ A(/noix de cajou|cajou/,590,{p:1.5}),
+ A(/noix de pecan|pecan/,700,{p:4}),
+ A(/saint[- ]jacques|st[- ]jacques/,90,{p:30}),
+ A(/\bnoix\b(?! de (?:muscade|beurre|margarine))/,690,{cs:7,p:5}),
+ A(/pignons?/,680,{cs:10}),
+ A(/pistaches?/,600,{cs:10}),
+ A(/cacahuetes?|arachides?/,600,{cs:10}),
+ A(/graines? de (?:sesame|lin|courge|tournesol|chia)|\bsesame/,580,{cs:9}),
+ A(/tahin|puree de sesame/,600,{cs:15}),
+ A(/raisins? secs?/,300,{cs:12}),
+ A(/dattes?/,280,{p:8}),
+ A(/abricots? secs?|pruneaux?|figues? seches?/,250,{p:10}),
+ A(/flocons? d'avoine|\bavoine|muesli|granola/,370,{cs:6,d:.4}),
+ A(/biscottes?/,400,{p:9}),
+ A(/speculoos|biscuits?|\bsables?\b|boudoirs?|palets?|cookies?|galettes? bretonnes?|crackers?|gaufrettes?|meringues?/,450,{p:8,u:{paquet:200}}),
+ A(/chapelure|panure/,380,{cs:8}),
+ A(/pates? (?:feuilletees?|brisees?|sablees?|a tarte)/,400,{p:230,u:{rouleau:230}}),
+ A(/pates? a pizza/,260,{p:260,u:{rouleau:260}}),
+ A(/feuilles? de brick|\bbrick|filo|phyllo/,300,{p:10,u:{feuille:10,paquet:170}}),
+ A(/tortillas?|wraps?|galettes? de ble/,300,{p:60}),
+ A(/pains? (?:de mie|burger|hamburger|a burger|hot dog|pita)|\bbuns?\b|pitas?/,280,{p:60,u:{tranche:25}}),
+ A(/baguettes?/,270,{p:250,u:{tranche:15}}),
+ A(/brioches?/,360,{p:400,u:{tranche:30}}),
+ A(/croutons?/,400,{cs:5}),
+ A(/\bpains?\b/,260,{p:250,u:{tranche:35}}),
+ A(/gnocchis?/,150,{u:{paquet:500}}),
+ A(/ravioli|tortellini|raviole/,250,{u:{paquet:250}}),
+ A(/\b(?:pates|spaghettis?|tagliatelles?|penne|macaronis?|coquillettes|fusilli|farfalles?|linguine|nouilles|vermicelles?|lasagnes?|conchiglie|orzo|rigatoni)\b/,355,{u:{paquet:500,feuille:20}}),
+ A(/\briz\b/,350,{d:.85}),
+ A(/semoule|couscous|boulgour|quinoa|polenta|\bebly|\bble\b/,360,{d:.75}),
+ A(/pois chiches? secs|haricots? secs/,340,{d:.8}),
+ A(/lentilles?|pois casses/,330,{d:.8}),
+ A(/pois chiches?|haricots? (?:rouges|blancs|noirs|coco|tarbais)|flageolets?|\bfeves?\b/,120,{u:{boite:265,bocal:265}}),
+ A(/petits? pois/,80,{u:{boite:280}}),
+ A(/\bmais\b(?! aussi| pas)/,100,{u:{boite:285}}),
+ A(/patates? douces?/,86,{p:300}),
+ A(/pommes? de terre|\bpatates?\b|grenailles?/,80,{p:150}),
+ A(/\bfrites/,150,{}),
+ A(/lardons?|allumettes/,270,{u:{barquette:200,paquet:200}}),
+ A(/bacon|poitrine fumee|pancetta/,280,{u:{tranche:15}}),
+ A(/jambon (?:cru|de parme|de bayonne|serrano|sec)|coppa|bresaola|viande des grisons/,250,{u:{tranche:15}}),
+ A(/jambon/,115,{u:{tranche:45}}),
+ A(/chorizo|saucisson|salami/,450,{p:250,u:{tranche:5,rondelle:5}}),
+ A(/merguez/,290,{p:60}),
+ A(/chair a saucisse|saucisses?|chipolatas?|knacks?|francfort|morteau|montbeliard|boudin/,280,{p:80}),
+ A(/steaks? haches?|viande hachee|hache de boeuf|boeuf hache|\bhache\b/,200,{p:125}),
+ A(/foie gras/,450,{u:{tranche:40}}),
+ A(/pate de campagne|rillettes|terrine/,320,{u:{tranche:40}}),
+ A(/magrets?/,200,{p:350}),
+ A(/canard|confit/,220,{p:250}),
+ A(/(?:blancs?|filets?|escalopes?|aiguillettes?) de (?:poulet|dinde|volaille)|suprem/,115,{p:150}),
+ A(/cuisses? de poulet|hauts? de cuisse|pilons?|ailes? de poulet/,190,{p:200}),
+ A(/poulet|volaille|poularde|chapon|pintade|dinde/,150,{p:1400}),
+ A(/lapin/,150,{p:1300}),
+ A(/agneau|mouton|gigot/,220,{p:300}),
+ A(/filet mignon/,140,{p:450}),
+ A(/\bporc|echine|cotes? de porc|travers|jarret/,200,{p:200}),
+ A(/\bveau|escalopes?/,150,{p:130}),
+ A(/boeuf|bourguignon|paleron|macreuse|joue|bavette|entrecote|rumsteck|faux[- ]filet|onglet|steaks?|\broti/,170,{p:150}),
+ A(/\bfoie|rognons?/,140,{}),
+ A(/saumon fume|truite fumee/,180,{u:{tranche:25}}),
+ A(/saumon|truite/,200,{p:130}),
+ A(/thon/,120,{p:150,u:{boite:140}}),
+ A(/crevettes?|gambas|langoustines?/,95,{p:15}),
+ A(/moules?/,40,{}),
+ A(/calamars?|encornets?|seiches?|poulpe/,80,{}),
+ A(/surimi/,100,{p:15}),
+ A(/cabillaud|colin|merlu|\blieu\b(?! de)|dos de|filets? de poisson|poissons?|haddock|merlan|\bsole\b|\bbar\b|dorade|daurade|lotte|eglefin|julienne|tilapia|panga/,85,{p:150}),
+ A(/concentre de tomates?|double concentre/,90,{cs:16,u:{boite:70,tube:140}}),
+ A(/tomates? (?:concassees|pelees|en des|en conserve)|coulis de tomates?|passata|puree de tomates?|pulpe de tomates?|sauce tomate/,30,{d:1,u:{boite:400,brique:500,bocal:500}}),
+ A(/tomates? cerises?/,20,{p:15,u:{barquette:250}}),
+ A(/tomates?/,20,{p:120}),
+ A(/oignons? nouveaux?|cebettes?/,30,{p:20,u:{botte:150}}),
+ A(/oignons?/,40,{p:100}),
+ A(/echalotes?/,72,{p:25}),
+ A(/\bail\b/,130,{p:5,u:{gousse:5,tete:40}}),
+ A(/carottes?/,36,{p:100}),
+ A(/courgettes?/,16,{p:250}),
+ A(/aubergines?/,20,{p:300}),
+ A(/poivrons?/,30,{p:150}),
+ A(/concombres?/,12,{p:300}),
+ A(/avocats?/,200,{p:150}),
+ A(/champignons?|cepes?|girolles?|pleurotes?|shiitake/,25,{p:20,u:{barquette:250,boite:230}}),
+ A(/epinards?|blettes?/,25,{u:{sachet:300}}),
+ A(/brocolis?/,35,{p:400,u:{tete:400}}),
+ A(/chou[- ]fleur/,30,{p:800}),
+ A(/choux? de bruxelles/,45,{}),
+ A(/\bchoux?\b/,30,{p:1000}),
+ A(/pousses? de soja|germes? de soja/,30,{}),
+ A(/poireaux?/,30,{p:150}),
+ A(/celeri[- ]rave/,30,{p:600}),
+ A(/celeri/,15,{p:40,u:{branche:40}}),
+ A(/butternut|courges?|potiron|potimarron|citrouille/,40,{p:1000}),
+ A(/radis/,15,{p:10,u:{botte:200}}),
+ A(/betteraves?/,45,{p:150}),
+ A(/endives?/,17,{p:120}),
+ A(/fenouils?/,20,{p:250}),
+ A(/navets?|panais/,40,{p:120}),
+ A(/artichauts?/,40,{p:250}),
+ A(/asperges?/,25,{p:20,u:{botte:500}}),
+ A(/haricots? verts?/,30,{u:{boite:440}}),
+ A(/salade|laitue|\bmache|roquette|mesclun|batavia|frisee|romaine|cresson|jeunes pousses/,15,{p:300,u:{sachet:125}}),
+ A(/olives?/,150,{p:4,u:{bocal:150}}),
+ A(/cornichons?/,20,{p:8}),
+ A(/capres/,30,{cs:10}),
+ A(/gingembre/,80,{u:{morceau:10,cm:5}}),
+ A(/citrons? verts?/,30,{p:60}),
+ A(/citrons?/,30,{p:100}),
+ A(/compote/,70,{u:{pot:100}}),
+ A(/\boranges?\b|clementines?|mandarines?/,45,{p:180}),
+ A(/pamplemousses?/,40,{p:350}),
+ A(/\bpommes?\b/,52,{p:150}),
+ A(/\bpoires?\b/,55,{p:170}),
+ A(/bananes?/,90,{p:120}),
+ A(/fraises?/,32,{p:15,u:{barquette:250}}),
+ A(/framboises?/,45,{u:{barquette:125}}),
+ A(/myrtilles?|\bmures?\b|cassis|groseilles?|fruits rouges/,50,{u:{barquette:125}}),
+ A(/cerises?/,60,{p:7}),
+ A(/abricots?/,45,{p:45}),
+ A(/\bpeches?\b|nectarines?|brugnons?/,40,{p:150}),
+ A(/\bprunes?\b|mirabelles?|quetsches?/,50,{p:35}),
+ A(/mangues?/,65,{p:400}),
+ A(/ananas/,50,{p:1000,u:{boite:340,tranche:80}}),
+ A(/kiwis?/,60,{p:80}),
+ A(/\braisins?\b/,70,{u:{grappe:200}}),
+ A(/rhubarbe/,20,{p:150,u:{tige:150}}),
+ A(/figues?/,70,{p:50}),
+ A(/melons?/,35,{p:800}),
+ A(/pasteque/,30,{}),
+ A(/mayonnaise/,700,{cs:15}),
+ A(/moutarde(?! en grains| graines)/,150,{cs:15}),
+ A(/ketchup/,110,{cs:17}),
+ A(/pesto/,450,{cs:15,u:{pot:190}}),
+ A(/sauce soja|\bsoja\b|tamari/,60,{cs:16,d:1.1}),
+ A(/nuoc|sauce (?:de )?poisson/,40,{cs:16}),
+ A(/sauce (?:barbecue|bbq|worcestershire|piquante)|harissa|tabasco|worcestershire/,100,{cs:16}),
+ A(/\bcafe\b/,2,{d:1}),
+ A(/\b(?:sel|poivre|eau|glacons?|bicarbonate|epices?|cumin|curcuma|paprika|curry|cannelle|muscade|piments?|cayenne|herbes?|thym|romarin|laurier|origan|basilic|persil|coriandre|ciboulette|menthe|aneth|estragon|sauge|cerfeuil|safran|girofle|cardamome|badiane|anis|ras el hanout|colorant|aromes?|vanille|zestes?|fleur d'oranger|levure chimique|poudre a lever|garam|tandoori|sumac|zaatar|fenugrec|bouquet garni|citronnelle|graines de moutarde)\b/,0,{neg:1})
+];
+var KC_ML={ml:1,cl:10,dl:100,l:1000,verre:200,tasse:250,bol:300,louche:100,trait:5,brique:200};
+var KC_GR={kg:1000,g:1,mg:.001};
+var KC_DEFU={sachet:10,boite:400,pot:125,tranche:30,gousse:5,botte:150,bouquet:20,branche:5,brin:1,feuille:1,noix:10,noisette:5,poignee:30,zeste:2,cube:10,tablette:100,carre:5,barquette:250,rouleau:230,paquet:250,morceau:30,cm:5,tete:40,bocal:300,buche:180,crottin:60,rondelle:10,boule:125,bloc:200,plaquette:250,tube:140,grappe:200,tige:100,pincee:.5,pointe:.3};
+var KC_UNITS=[["kg",/^(?:kg|kilos?|kilogrammes?)(?![a-z])\.?/],["mg",/^mg(?![a-z])/],["g",/^(?:g|gr|grs|grammes?)(?![a-z])\.?/],["ml",/^(?:ml|millilitres?)(?![a-z])/],["cl",/^(?:cl|centilitres?)(?![a-z])/],["dl",/^(?:dl|decilitres?)(?![a-z])/],["l",/^(?:l|litres?)(?![a-z'])/],["cs",/^cs(?![a-z])/],["cc",/^cc(?![a-z])/],
+  ["*",/^(?:sachets?|boites?|conserves?|briques?|pots?|tranches?|gousses?|bottes?|bouquets?|branches?|brins?|feuilles?|noix(?= de (?:beurre|margarine))|noisettes?(?= de (?:beurre|margarine))|filets?(?= (?:d'huile|de vinaigre|de citron|de jus|de sirop|de creme|de miel|de lait|de sauce))|traits?|poignees?|zestes?|cubes?|tablettes?|carres?|barquettes?|rouleaux?|paquets?|morceaux?|cm|tetes?|bocal|bocaux|buches?|crottins?|rondelles?|boules?|blocs?|plaquettes?|tubes?|grappes?|tiges?|louches?|pincees?|pointes?|verres?|tasses?|bols?)(?![a-z])/]];
+var KC_WN={un:1,une:1,deux:2,trois:3,quatre:4,cinq:5,six:6,sept:7,huit:8,neuf:9,dix:10,douze:12,quelques:3};
+function kcNorm(t){
+  var s=String(t).replace(/½/g," 1/2").replace(/¼/g," 1/4").replace(/¾/g," 3/4").replace(/⅓/g," 1/3").replace(/⅔/g," 2/3").replace(/(\d)\s*\/\s*(\d)/g,"$1/$2")
+    .normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae").replace(/[’`´]/g,"'").replace(/\s+/g," ").trim();
+  s=s.replace(/\b(?:un|une) demie?[- ]/g,"0.5 ").replace(/\bdemie?[- ](?=[a-z])/g,"0.5 ").replace(/\b(?:une )?dizaine (?:de |d')?/g,"10 ").replace(/\b(?:une )?douzaine (?:de |d')?/g,"12 ")
+    .replace(/(^|\b(?:de|d')\s?)(un|une|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|douze|quelques)\b(?!-)/g,function(a,p,w){return p+" "+KC_WN[w]+" "});
+  s=s.replace(/\b(?:cuil+e?r?e?s?|cuil+)\.?\s*(?:a|de)?\s*soupe\b\.?/g," cs ").replace(/\b(?:cuil+e?r?e?s?|cuil+)\.?\s*(?:a|de)?\s*(?:cafe|the)\b\.?/g," cc ")
+    .replace(/\bc\.?\s?a\.?\s?soupe\b/g," cs ").replace(/\bc\.?\s?a\.?\s?(?:cafe|the)\b/g," cc ").replace(/\bc\.?\s?a\.?\s?s\b\.?/g," cs ").replace(/\bc\.?\s?a\.?\s?c\b\.?/g," cc ").replace(/\bc\.\s?s\.?(?![a-z])/g," cs ").replace(/\bc\.\s?c\.?(?![a-z])/g," cc ")
+    .replace(/\b(?:cas|tbsp|cuil+eres?|cuil+)\b\.?/g," cs ").replace(/\b(?:cac|tsp)\b\.?/g," cc ");
+  return s.replace(/\s+/g," ").trim()}
+function kcFood(x){if(!x)return null;for(var i=0;i<ALIM.length;i++)if(ALIM[i].re.test(x))return ALIM[i];return null}
+function kcUnit(u){return u.replace(/^bocaux$/,"bocal").replace(/^(rouleau|morceau)x$/,"$1").replace(/^conserves?$/,"boite").replace(/s$/,"")}
+function kcNum(m){var v=parseFloat(m[1].replace(",","."));if(m[2])v+=(+m[2])/(+m[3]);else if(m[4])v=v/(+m[4]);if(m[5])v=(v+parseFloat(m[5].replace(",",".")))/2;return v}
+/* analyse d'une ligne d'ingrédient : {t, g (grammes), k (kcal), st : ok | neg (négligeable) | nq (quantité non précisée) | inconnu} */
+function kcLigne(t){
+  var s=kcNorm(t),o={t:t,g:0,k:0,st:"inconnu"};
+  var paren=(s.match(/\(([^)]*)\)/g)||[]).join(" "),s2=s.replace(/\([^)]*\)/g," ").replace(/\s+/g," ").trim();
+  var QR=/(\d+(?:[.,]\d+)?)(?:\s+(\d+)\/(\d+)|\/(\d+))?(?:\s*(?:a|-|–|ou)\s*(\d+(?:[.,]\d+)?)(?![\d\/]))?/g,m,q=null,before="",after=s2;
+  while((m=QR.exec(s2))){var nx=s2.slice(m.index+m[0].length);if(/^\s*%/.test(nx)||/[a-z]$/.test(s2.slice(0,m.index)))continue;q=kcNum(m);before=s2.slice(0,m.index);after=nx;break}
+  after=after.trim();var u=null,um;
+  for(var i=0;i<KC_UNITS.length;i++){if((um=after.match(KC_UNITS[i][1]))){u=KC_UNITS[i][0]==="*"?kcUnit(um[0]):KC_UNITS[i][0];after=after.slice(um[0].length).trim();break}}
+  var per=null,pm=u&&!KC_GR[u]&&!KC_ML[u]&&u!=="cs"&&u!=="cc"?after.match(/^(?:de |d')?\s*(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes|cl|ml|l)\b/):null;
+  if(pm){after=after.slice(pm[0].length).trim()}
+  after=after.replace(/^(?:de la |de l'|des |du |de |d')\s*/,"");
+  var f=kcFood(after)||kcFood((before+" "+after).trim())||kcFood(s);
+  if(!f){o.st=q==null?"nq":"inconnu";return o}
+  if(f.neg){o.st="neg";return o}
+  var d=f.d||1,uu=f.u||{};
+  function mass(n,un){n=parseFloat(String(n).replace(",","."));return KC_GR[un]?n*KC_GR[un]:/^(?:gr|grammes)$/.test(un)?n:n*(KC_ML[un]||1)*d}
+  if(pm)per=mass(pm[1],pm[2]);
+  var pg=null,pp=paren.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes|cl|ml|l)\b/g);
+  if(pp){var lm=pp[pp.length-1].match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes|cl|ml|l)\b/);pg=mass(lm[1],lm[2])}
+  var total=/soit|total|en tout/.test(paren),g=null,ml=null;
+  if(q==null){if(pg!=null&&!u){g=pg}else if(u){q=1}else{o.st="nq";return o}}
+  if(g==null){
+    if(KC_GR[u])g=q*KC_GR[u];
+    else if(KC_ML[u])ml=q*(uu[u]||KC_ML[u]);
+    else if(u==="cs"||u==="cc")g=q*(f.cs||15*d)/(u==="cc"?3:1);
+    else if(u==="filet"){if(uu.filet)g=q*uu.filet;else ml=q*5}
+    else if(u){g=pg!=null?(total?pg:q*pg):q*(per||uu[u]||KC_DEFU[u]||30)}
+    else if(pg!=null)g=total?pg:q*pg;
+    else if(f.p)g=q*f.p;
+    else if(q>=20)g=q;
+    else{o.st="nq";return o}
+  }
+  if(ml!=null){o.k=f.kv!=null?ml*f.kv/100:ml*d*f.k/100;g=ml*d}else o.k=g*f.k/100;
+  o.g=Math.round(g);o.k=Math.round(o.k);o.st="ok";return o}
+function persNb(f){var m=String((f.m&&f.m.pers)||f.pers||"").match(/\d+/),n=m?+m[0]:0;
+  if(!n){var m2=String(f.r||"").match(/(\d+)\s*(?:a\s*\d+\s*)?(?:pers|part|portion|convive|gourmand)/i);if(m2)n=+m2[1]}
+  return n>0&&n<100?n:0}
+var KC={};
+/* estimation pour une recette : {tot, pers, pp (kcal par personne, arrondies à 10), L (détail), ko (lignes non reconnues)} */
+function kcalRecette(r){var f=fiches[r.slug];if(!f||!(f.ing||[]).length)return null;var c=KC[r.slug];if(c&&c.f===f)return c.v;
+  var L=[],tot=0,ko=0;
+  (f.ing||[]).forEach(function(it){if(it.l)return;var t=net(it.t,"");if(!t)return;var a=kcLigne(t);L.push(a);if(a.st==="ok")tot+=a.k;else if(a.st==="inconnu")ko++});
+  var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0?Math.max(10,Math.round(tot/pers/10)*10):0,L:L,ko:ko}:null;
+  KC[r.slug]={f:f,v:v};return v}
+var AVERT_KCAL="Estimation indicative, sans aucune valeur médicale : les calories sont calculées automatiquement à partir des ingrédients et de valeurs moyennes, pour te donner un ordre de grandeur de ce que tu es susceptible de manger.";
+
+/* ================= Équilibre alimentaire : composition d'un menu ================= */
+var COURSES=[["entree","Entrée",/^entree/,"🥗"],["plat","Plat",/^plat/,"🍲"],["accompagnement","Accompagnement",/^accompagn/,"🍟"],["dessert","Dessert",/^dessert/,"🍰"]];
+var menu={};try{menu=JSON.parse(localStorage.getItem("cookapli-menu")||"{}")||{}}catch(e){menu={}}
+function saveMenu(){try{localStorage.setItem("cookapli-menu",JSON.stringify(menu))}catch(e){}}
+var pick=null; /* {c : identifiant du plat à choisir, sel : recette sélectionnée} */
+function course(c){return COURSES.filter(function(x){return x[0]===c})[0]}
+function courseCat(c){var C=course(c);if(!C)return null;var l=catList().filter(function(x){return C[2].test(slug(x.name))})[0];return l?l.name:null}
+function hideEq(){document.body.classList.remove("view-eq");$("eq").hidden=true}
+function showEq(){document.body.classList.add("view-eq");$("eq").hidden=false;renderEq();window.scrollTo(0,0)}
+function renderEq(){var box=$("eqp");box.textContent="";
+  var top=el("div","backbar"),a=el("a","btn alt","← Livre de recettes");a.href="#";var w=el("div","cwrap"),t=el("b","cpill eqp","Équilibre alimentaire");t.style.background="linear-gradient(135deg,#cdeccb,#9fd89a)";w.appendChild(t);top.appendChild(a);top.appendChild(w);box.appendChild(top);
+  var av=el("div","eqwarn");av.appendChild(el("b",null,"⚠️ Outil indicatif, sans valeur médicale"));
+  av.appendChild(el("p",null,"Les calories affichées sont des estimations calculées automatiquement à partir des ingrédients de chaque recette et de valeurs moyennes. Elles t’aident seulement à évaluer ce que tu es susceptible de manger par plat ou par repas. Elles ne remplacent pas l’avis d’un médecin ou d’un·e diététicien·ne."));
+  box.appendChild(av);
+  box.appendChild(el("h3","eqh","Mon menu"));
+  var mn=el("div","eqmenu"),sum=0,nb=0,sans=0;
+  COURSES.forEach(function(C,i){var row=el("div","eqrow"),tile=el("a","eqt");tile.href="#menu-"+C[0];var p=PAL[[0,4,1,5][i]];tile.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
+    var ch=menu[C[0]],r=ch&&recipes.filter(function(x){return x.slug===ch.slug})[0],tx=el("span");
+    if(ch){tx.appendChild(el("span","lab",C[1]));tx.appendChild(el("b",null,r?r.name:ch.name));
+      var kc=r&&kcalRecette(r);nb++;
+      if(kc&&kc.pp){sum+=kc.pp;tx.appendChild(el("span","kc","≈ "+kc.pp+" kcal / pers."))}else{sans++;tx.appendChild(el("small",null,"Calories non disponibles pour cette recette"))}
+      tx.appendChild(el("small","chg","Toucher pour changer"))}
+    else{tx.appendChild(el("b",null,C[1]));tx.appendChild(el("small",null,"Toucher pour choisir"))}
+    var ill=el("span","ill",C[3]);ill.setAttribute("aria-hidden","true");tile.appendChild(tx);tile.appendChild(ill);
+    row.appendChild(tile);
+    if(ch){var x=el("button","eqx","✕");x.type="button";x.title="Retirer "+C[1].toLowerCase()+" du menu";x.setAttribute("aria-label","Retirer du menu : "+C[1]);x.onclick=function(){delete menu[C[0]];saveMenu();renderEq()};row.appendChild(x)}
+    mn.appendChild(row)});
+  box.appendChild(mn);
+  if(nb){var tt=el("div","eqtot");tt.appendChild(el("span",null,"Total estimé du menu"));tt.appendChild(el("b",null,sum?"≈ "+sum+" kcal par personne":"—"));
+    if(sans)tt.appendChild(el("small",null,sans>1?sans+" recettes ne sont pas comptées (calories non disponibles).":"1 recette n’est pas comptée (calories non disponibles)."));
+    box.appendChild(tt);
+    var bb=el("p","eqbtns"),vb=el("button","btn alt","Vider le menu");vb.type="button";vb.onclick=function(){menu={};saveMenu();renderEq()};bb.appendChild(vb);box.appendChild(bb)}
+  var inf=el("div","eqinfo");inf.appendChild(el("b",null,"Repères généraux d’apports en énergie pour un adulte"));
+  var ul=el("ul");["Femme : environ 1 800 à 2 200 kcal par jour","Homme : environ 2 400 à 2 600 kcal par jour, selon le niveau d’activité","Répartition conseillée de l’énergie : environ 55 % de glucides, 15 % de protéines et 30 % de lipides"].forEach(function(s){ul.appendChild(el("li",null,s))});inf.appendChild(ul);
+  inf.appendChild(el("p",null,"Ces chiffres concernent la journée entière (tous les repas) et sont des moyennes générales : les besoins varient selon l’âge, la taille, l’activité physique… Ce sont des conseils, pas des règles strictes. L’appli ne te demande aucune donnée personnelle et ne fait aucune recommandation personnalisée."));
+  var src=el("p","src","Source : "),la=el("a",null,"Vidal – Recommandations nutritionnelles chez l’adulte");la.href="https://www.vidal.fr/sante/nutrition/equilibre-alimentaire-adulte/recommandations-nutritionnelles-adulte.html";la.target="_blank";la.rel="noopener";src.appendChild(la);src.appendChild(document.createTextNode(" (d’après les apports nutritionnels conseillés de l’AFSSA, devenue ANSES)."));inf.appendChild(src);
+  box.appendChild(inf)}
+function pickBar(){var C=course(pick.c),d=el("div","backbar"),a=el("a","btn alt","← Mon menu");a.href="#equilibre";var w=el("div","cwrap"),t=el("b","cpill","Choisis : "+C[1]);t.style.background="linear-gradient(135deg,#cdeccb,#9fd89a)";w.appendChild(t);d.appendChild(a);d.appendChild(w);return d}
+function pickUpdate(){var bar=$("pickgo");if(!pick){bar.textContent="";return}
+  var r=pick.sel&&recipes.filter(function(x){return x.slug===pick.sel})[0];bar.textContent="";
+  var ok=el("button","btn vbtn",r?"✓ Valider : "+r.name:"Touche une recette pour la choisir");ok.type="button";ok.disabled=!r;ok.onclick=function(){if(r)choisir(r)};bar.appendChild(ok);
+  if(r){var v=el("button","btn alt","Voir la recette");v.type="button";v.onclick=function(){viaList=true;location.hash=r.slug};bar.appendChild(v)}
+  Array.prototype.forEach.call(document.querySelectorAll("#list .card"),function(c){c.classList.toggle("picked",c.dataset.slug===pick.sel);c.setAttribute("aria-pressed",c.dataset.slug===pick.sel)})}
+function choisir(r){menu[pick.c]={slug:r.slug,name:r.name};saveMenu();track("menu",r.name);pick=null;document.body.classList.remove("picking");pickUpdate();location.replace("#equilibre");toast("C’est noté : « "+r.name+" » est dans ton menu")}
+function vegStamp(big){var s=el("span","veg"+(big?" big":""),"Végétarien");return s}
 
 function renderChips(){var cats=["Tout"];recipes.forEach(function(r){if(r.cat&&cats.indexOf(r.cat)<0)cats.push(r.cat)});if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
-  cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)})}
+  cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)});
+  var eq=document.createElement("button");eq.className="chip chipeq";eq.textContent="⚖️ Équilibre alimentaire";eq.onclick=function(){location.hash="equilibre"};box.appendChild(eq)}
 /* informations des pastilles affichées sur chaque miniature (recettes dont les informations sont validées) */
 function infosCarte(r){
   var f=fiches[r.slug];if(!f||!f.m)return null;
   var L=[["Durée",duree(f.m.prep),"#bfe8ee"],["Cuisson",cuis(f.m.cuisson),"#ffd9c7"],["Personnes",vide(f.m.pers),"#cdeccb"],["Difficulté",vide(f.m.diff),"#fff1b8"]];
+  var kc=kcalRecette(r);if(kc&&kc.pp)L.push(["Calories / pers.","≈ "+kc.pp+" kcal",null,"kc"]);
   var box=document.createElement("div");box.className="cinfo";
   L.forEach(function(x){if(!x[1])return;
-    var d=document.createElement("div");d.className="ci";d.style.background=x[2];
+    var d=document.createElement("div");d.className="ci"+(x[3]?" "+x[3]:"");if(x[2])d.style.background=x[2];if(x[3])d.title=AVERT_KCAL;
     var k=document.createElement("span");k.className="k";k.textContent=x[0];
     var v=document.createElement("span");v.className="v";
     if(x[0]==="Difficulté"){var c={Facile:"#1f7a43",Moyen:"#a85f00",Difficile:"#b3261e"}[x[1]];if(c)v.style.color=c}
@@ -209,8 +601,9 @@ function infosCarte(r){
     d.appendChild(k);d.appendChild(v);box.appendChild(d)});
   return box.children.length?box:null}
 function renderList(){var box=$("list");box.textContent="";
-  if(isMobile()&&cat==="Tout"&&!query.trim()){renderCats(box);return}
-  if(isMobile()&&cat!=="Tout")box.appendChild(backBar());
+  if(pick)box.appendChild(pickBar());
+  else if(isMobile()&&cat==="Tout"&&!query.trim()){renderCats(box);return}
+  else if(isMobile()&&cat!=="Tout")box.appendChild(backBar());
   /* recherche : « bœuf » = « boeuf », « cœur » = « coeur » (les ligatures œ/æ sont dépliées des deux côtés) */
   var srch=function(t){return slug(String(t||"").replace(/œ/g,"oe").replace(/Œ/g,"Oe").replace(/æ/g,"ae").replace(/Æ/g,"Ae")).replace(/-/g," ")};
   var q=srch(query);
@@ -219,10 +612,14 @@ function renderList(){var box=$("list");box.textContent="";
   var groups={},order=[];items.forEach(function(r){var k=cat==="Tout"?"":r.cat;if(!groups[k]){groups[k]=[];order.push(k)}groups[k].push(r)});
   order.forEach(function(c){
     var g=document.createElement("div");g.className="grid";
-    groups[c].forEach(function(r){var b=document.createElement("button");b.className="card";b.style.borderTop="4px solid hsl("+hue(r.cat||r.name)+" 65% 55%)";b.appendChild(thumb(r));
+    groups[c].forEach(function(r){var b=document.createElement("button");b.className="card";b.style.borderTop="4px solid hsl("+hue(r.cat||r.name)+" 65% 55%)";
+      if(r.veg){var vr=el("div","vegrow");vr.appendChild(el("span","vegtag","Végétarien"));b.appendChild(vr)}
+      b.appendChild(thumb(r));
       var t=document.createElement("div");t.className="t";var n=document.createElement("b");n.textContent=r.name;var inf=infosCarte(r);t.appendChild(n);if(inf)t.appendChild(inf);else{var s=document.createElement("small");s.textContent=[r.type,r.region].filter(Boolean).join(", ");t.appendChild(s)}b.appendChild(t);
-      b.onclick=function(){viaList=true;location.hash=r.slug};g.appendChild(b)});
-    box.appendChild(g)})}
+      b.dataset.slug=r.slug;
+      b.onclick=function(){if(pick){pick.sel=pick.sel===r.slug?null:r.slug;pickUpdate();return}viaList=true;location.hash=r.slug};g.appendChild(b)});
+    box.appendChild(g)});
+  if(pick)pickUpdate()}
 
 var fiches={},viaList=false;
 function toTop(){window.scrollTo({top:0,behavior:window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})}
@@ -428,6 +825,7 @@ function showRecipe(r,silent){
   persN=f&&f.m?persBase(f.m.pers):0;drawIng=function(){};
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Livre de recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
+    if(pick&&r.cat===courseCat(pick.c)){var pc=el("button","btn vbtn","✓ Choisir pour mon menu ("+course(pick.c)[1]+")");pc.type="button";pc.onclick=function(){hideRecipe();choisir(r)};b.appendChild(pc)}
     if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};var cw=el("div","chefrow");cw.appendChild(cb);b.appendChild(cw)}return b}
   box.appendChild(bar());
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
@@ -435,14 +833,19 @@ function showRecipe(r,silent){
   tx.appendChild(el("h2",null,r.name));
   if(f&&f.r){var rr=net(f.r,"");if(rr)tx.appendChild(el("p","rend",rr))}
   hero.appendChild(tx);
-  if(img){var im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){im.remove();hero.classList.add("solo")};hero.appendChild(im)}
+  var vs=r.veg?vegStamp(true):null;
+  if(img){var iw=el("div","rimg"),im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){iw.remove();hero.classList.add("solo");if(vs)hero.appendChild(vs)};iw.appendChild(im);if(vs)iw.appendChild(vs);hero.appendChild(iw)}
+  else if(vs)hero.appendChild(vs);
   box.appendChild(hero);
   var pills=el("div","rpills");
   (f&&f.m?[["DURÉE PRÉPARATION",duree(f.m.prep),"#bfe8ee"],["CUISSON",cuis(f.m.cuisson),"#ffd9c7"],["NOMBRE DE PERSONNES",vide(f.m.pers),"#cdeccb"],["DIFFICULTÉ",vide(f.m.diff),"#fff1b8"]]:[["CATÉGORIE",r.cat,"#bfe8ee"],["TYPE",r.type,"#cdeccb"],["RÉGION",r.region,"#fff1b8"],["CUISSON",f&&f.cuisson,"#ffd9c7"]]).forEach(function(p){
     if(!p[1]||p[1]==="—")return;var d=el("div","rpill");d.style.background=p[2];d.appendChild(el("small",null,p[0]));
     if(p[0]==="NOMBRE DE PERSONNES"&&f&&persBase(f.m.pers)){d.appendChild(persStepper(persBase(f.m.pers),function(n){persN=n;drawIng()}));pills.appendChild(d);return}
     d.appendChild(el("b",null,p[1]));pills.appendChild(d)});
+  var kc=kcalRecette(r);
+  if(kc&&kc.pp){var kd=el("div","rpill kc");kd.title=AVERT_KCAL;kd.appendChild(el("small",null,"CALORIES / PERSONNE"));kd.appendChild(el("b",null,"≈ "+kc.pp+" kcal"));pills.appendChild(kd)}
   if(pills.children.length)box.appendChild(pills);
+  if(kc)box.appendChild(kcalDetail(kc));
   if(f){
     var s1=el("section","rsec");s1.appendChild(el("h3",null,titreIngredients_(f.ingTitle)));
     var ib=el("div","rbox rcols"),pnote=el("p","persnote");pnote.hidden=true;
@@ -469,6 +872,16 @@ function showRecipe(r,silent){
   }
   var fin=el("div","rbar");var b2=el("a","btn alt","← Livre de recettes");b2.href="#";b2.onclick=function(e){e.preventDefault();leaveRecipe()};fin.appendChild(b2);box.appendChild(fin);
 }
+function kcalDetail(kc){var d=el("details","kdet"),sm=el("summary",null,kc.pp?"Comment les calories sont estimées":"Calories : estimation impossible pour cette recette");d.appendChild(sm);
+  d.appendChild(el("p","note",AVERT_KCAL+" Ce n’est pas une donnée médicale."));
+  if(kc.pp)d.appendChild(el("p",null,"Total de la recette ≈ "+Math.round(kc.tot/10)*10+" kcal, divisé par "+kc.pers+(kc.pers>1?" personnes":" personne")+" ≈ "+kc.pp+" kcal par personne."));
+  else d.appendChild(el("p",null,!kc.pers?"Le nombre de personnes n’est pas indiqué sur la fiche.":"Aucun ingrédient n’a pu être chiffré."));
+  var tb=el("table"),lab={neg:"négligeable",nq:"quantité non précisée",inconnu:"non reconnu"};
+  kc.L.forEach(function(a){var tr=el("tr");tr.appendChild(el("td",null,a.t));
+    if(a.st==="ok"){tr.appendChild(el("td","n","≈ "+a.g+" g"));tr.appendChild(el("td","n",a.k+" kcal"))}else{var x=el("td","n x",lab[a.st]);x.colSpan=2;tr.appendChild(x)}tb.appendChild(tr)});
+  d.appendChild(tb);
+  if(kc.ko)d.appendChild(el("p","note",kc.ko>1?kc.ko+" ingrédients n’ont pas été reconnus et ne sont pas comptés : le total réel est probablement un peu plus élevé.":"1 ingrédient n’a pas été reconnu et n’est pas compté : le total réel est probablement un peu plus élevé."));
+  return d}
 function hideRecipe(){current=null;document.body.classList.remove("view-recipe");$("recipe").hidden=true}
 function leaveRecipe(){
   if(viaList){viaList=false;history.back();return}
@@ -517,6 +930,8 @@ var PAL=[["#bfe8ee","#8fd3dd"],["#ffd9c7","#ffb899"],["#d9d0f5","#b9a8ee"],["#ff
 function catIcon(c){var k=slug(c);if(/apero/.test(k))return"🥂";if(/entree/.test(k))return"🥗";if(/vegetarien/.test(k))return"🥦";if(/plat-unique/.test(k))return"🥘";if(/^plat/.test(k))return"🍲";if(/accompagn/.test(k))return"🍟";if(/salee/.test(k))return"🧂";if(/dessert/.test(k))return"🍰";if(/sucree/.test(k))return"🍯";if(/biscuit/.test(k))return"🍪";return"🍽️"}
 function catList(){var list=[],n={};recipes.forEach(function(r){if(!r.cat)return;if(!n[r.cat]){n[r.cat]=0;list.push(r.cat)}n[r.cat]++});return list.map(function(c){return{name:c,n:n[c]}})}
 function renderCats(box){var nav=document.createElement("nav");nav.className="cats";nav.setAttribute("aria-label","Catégories");
+  var eq=document.createElement("a");eq.className="catb cateq";eq.href="#equilibre";var et=document.createElement("span"),eb=document.createElement("b");eb.textContent="Équilibre alimentaire";var es=document.createElement("small");es.textContent="Composer un menu et estimer ses calories";et.appendChild(eb);et.appendChild(es);
+  var ei=document.createElement("span");ei.className="ill";ei.textContent="⚖️";ei.setAttribute("aria-hidden","true");eq.appendChild(et);eq.appendChild(ei);nav.appendChild(eq);
   catList().forEach(function(c,i){var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=PAL[i%PAL.length];a.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
     var t=document.createElement("span");var b=document.createElement("b");b.textContent=c.name;var sm=document.createElement("small");sm.textContent=c.n+(c.n>1?" recettes":" recette");t.appendChild(b);t.appendChild(sm);
     var ill=document.createElement("span");ill.className="ill";ill.textContent=catIcon(c.name);ill.setAttribute("aria-hidden","true");
@@ -526,6 +941,13 @@ function backBar(){var d=document.createElement("div");d.className="backbar";var
   var i=catList().map(function(c){return c.name}).indexOf(cat);if(i<0)i=0;var p=PAL[i%PAL.length];t.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
   w.appendChild(t);d.appendChild(a);d.appendChild(w);return d}
 function route(){var h=decodeURIComponent(location.hash.slice(1));
+  if(h==="equilibre"){if(pick){pick=null;document.body.classList.remove("picking");pickUpdate()}if(current)hideRecipe();showEq();return}
+  hideEq();
+  if(h.indexOf("menu-")===0){var mc=h.slice(5),cn0=courseCat(mc);if(current)hideRecipe();
+    if(!cn0){if(recipes.length){toast("Rubrique introuvable : impossible de choisir ce plat pour le moment.");location.replace("#equilibre")}return}
+    if(!pick||pick.c!==mc)pick={c:mc,sel:menu[mc]&&menu[mc].slug||null};cat=cn0;query="";$("q").value="";document.body.classList.add("picking");renderChips();renderList();toTop();return}
+  var estRecette=h&&h.indexOf("categorie-")!==0&&recipes.some(function(x){return x.slug===h});
+  if(pick&&!estRecette){pick=null;document.body.classList.remove("picking");pickUpdate();renderList()}
   if(h.indexOf("categorie-")===0){var cn=catList().filter(function(c){return"categorie-"+slug(c.name)===h})[0];
     if(current)hideRecipe();
     if(cn&&cat!==cn.name){track("categorie",cn.name);cat=cn.name;renderChips();renderList();toTop()}return}
