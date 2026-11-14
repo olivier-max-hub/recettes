@@ -170,6 +170,7 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 body.picking:not(.view-recipe) #pickgo{display:flex}
 body.picking main{padding-bottom:90px}
 body.picking #chips{display:none}
+.picksort{margin:0 0 12px;color:#000;font-weight:700;font-size:.95rem;text-align:center}
 body.picking .chef-f{display:none}
 .chip.chipeq{background:var(--vert);border-color:var(--vert);font-weight:700}
 .catb.cateq{background:linear-gradient(135deg,#2e9a5a,var(--vert))!important;color:#fff}
@@ -616,6 +617,9 @@ function renderList(){var box=$("list");box.textContent="";
   var q=srch(query);
   var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
   if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent="Aucune recette ne correspond.";box.appendChild(p);return}
+  /* choix pour le menu Équilibre alimentaire : de la moins calorique à la plus calorique, recettes sans calories à la fin */
+  if(pick){var kv=function(r){var k=kcalRecette(r);return k&&k.pp?k.pp:Infinity};items=items.slice().sort(function(a,b){return kv(a)-kv(b)});
+    box.appendChild(el("p","picksort","Classées de la moins à la plus calorique"))}
   var groups={},order=[];items.forEach(function(r){var k=cat==="Tout"?"":r.cat;if(!groups[k]){groups[k]=[];order.push(k)}groups[k].push(r)});
   order.forEach(function(c){
     var g=document.createElement("div");g.className="grid";
