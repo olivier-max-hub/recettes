@@ -172,6 +172,10 @@ body.picking main{padding-bottom:90px}
 body.picking #chips{display:none}
 .chip.chipgaspi{background:#cdeccb;color:#0b4f59;border-color:#9fd89a;font-weight:700}
 .chip.chipgaspi[aria-pressed=true]{background:#9fd89a;border-color:#9fd89a}
+.chip.chipchrono{background:#c9e1fb;color:#0b4f59;border-color:#9cc6f2;font-weight:700}
+.chip.chipchrono[aria-pressed=true]{background:#9cc6f2;border-color:#9cc6f2}
+a.card{text-decoration:none}
+.iamini{position:absolute;top:8px;left:8px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font:700 .7rem/1 Arial,sans-serif;padding:3px 6px;border-radius:6px}
 .picksort{margin:0 0 12px;color:#000;font-weight:700;font-size:.95rem;text-align:center}
 body.picking .chef-f{display:none}
 .chip.chipeq{background:var(--vert);border-color:var(--vert);font-weight:700}
@@ -593,8 +597,9 @@ function pickUpdate(){var bar=$("pickgo");if(!pick){bar.textContent="";return}
 function choisir(r){menu[pick.c]={slug:r.slug,name:r.name};saveMenu();track("menu",r.name);pick=null;document.body.classList.remove("picking");pickUpdate();location.replace("#equilibre");toast("C’est noté : « "+r.name+" » est dans ton menu")}
 function vegStamp(big){var s=el("span","veg"+(big?" big":""),"Végétarien");return s}
 
-function renderChips(){var cats=["Tout"].concat(catList().map(function(c){return c.name}));if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
+function renderChips(){var cats=["Tout"].concat(catList().map(function(c){return c.name}));if(cats.indexOf(cat)<0&&cat!==CHRONO)cat="Tout";var box=$("chips");box.textContent="";
   cats.forEach(function(c){var b=document.createElement("button");b.className="chip"+(isGaspi(c)?" chipgaspi":"");b.textContent=(isGaspi(c)?"♻️ ":"")+c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)});
+  var chb=document.createElement("button");chb.className="chip chipchrono";chb.textContent="⏱️ "+CHRONO;chb.setAttribute("aria-pressed",cat===CHRONO);chb.onclick=function(){location.hash="chrono"};box.appendChild(chb);
   var eq=document.createElement("button");eq.className="chip chipeq";eq.textContent="⚖️ Équilibre alimentaire";eq.onclick=function(){location.hash="equilibre"};box.appendChild(eq)}
 /* informations des pastilles affichées sur chaque miniature (recettes dont les informations sont validées) */
 function infosCarte(r){
@@ -611,6 +616,7 @@ function infosCarte(r){
     d.appendChild(k);d.appendChild(v);box.appendChild(d)});
   return box.children.length?box:null}
 function renderList(){var box=$("list");box.textContent="";
+  if(cat===CHRONO&&!pick){renderChrono(box);return}
   if(pick)box.appendChild(pickBar());
   else if(isMobile()&&cat==="Tout"&&!query.trim()){renderCats(box);return}
   else if(isMobile()&&cat!=="Tout")box.appendChild(backBar());
@@ -944,13 +950,42 @@ function catIcon(c){var k=slug(c);if(/anti-?gaspi/.test(k))return"♻️";if(/ap
 /* rubrique « Anti gaspi » : toujours affichée (vert anti-gaspi), même vide ; les recettes de la catégorie « Anti gaspi » du tableau s'y rangent */
 var ANTIGASPI="Anti gaspi",PAL_GASPI=["#cdeccb","#9fd89a"];
 function isGaspi(c){return /anti-?gaspi/.test(slug(c||""))}
-function catPal(name,i){return isGaspi(name)?PAL_GASPI:PAL[i%PAL.length]}
+function catPal(name,i){return name===CHRONO?PAL_CHRONO:isGaspi(name)?PAL_GASPI:PAL[i%PAL.length]}
+/* ===== 30 minutes chrono : recettes rapides validées de Friscan (friscan/data.js, champ ok), chaque fiche s'ouvre dans Friscan ===== */
+var CHRONO="30 minutes chrono",PAL_CHRONO=["#c9e1fb","#9cc6f2"],rapides=null,FRISCAN="../friscan/";
+var IA_TXT="Photo d’illustration créée par IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle.";
+try{var rc=JSON.parse(localStorage.getItem("recettes-rapides")||"null");if(rc&&rc.length)rapides=rc}catch(e){}
+function loadRapides(){fetch(FRISCAN+"data.js?t="+Date.now()).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
+  var d=new Function(t+";return {R:RECETTES,C:CATS}")();
+  rapides=d.R.filter(function(r){return r.ok&&r.min<=30}).sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")}).map(function(r){return{id:r.id,n:r.n,e:r.e,cat:r.cat,min:r.min,pers:r.pers,img:r.img||"",ia:r.ia?1:0,c:d.C[r.cat]||PAL_CHRONO}});
+  try{localStorage.setItem("recettes-rapides",JSON.stringify(rapides))}catch(e){}
+  if(!current&&recipes.length){renderChips();renderList()}
+}).catch(function(){})}
+function renderChrono(box){
+  if(isMobile())box.appendChild(backBar());
+  if(!rapides){box.appendChild(el("p","msg","Chargement des recettes rapides…"));return}
+  var q=slug(query).replace(/-/g," "),items=rapides.filter(function(r){return!q||slug(r.n+" "+r.cat).replace(/-/g," ").indexOf(q)>=0});
+  box.appendChild(el("p","picksort","Des recettes rapides validées, prêtes en 30 minutes au maximum. Chaque fiche s’ouvre dans Friscan."));
+  if(!items.length){box.appendChild(el("p","msg","Aucune recette ne correspond."));return}
+  var g=el("div","grid");
+  items.forEach(function(r){var a=el("a","card");a.href=FRISCAN+"#r-"+r.id;a.style.borderTop="4px solid "+r.c[1];
+    var th=el("div","thumb");th.style.background="linear-gradient(135deg,"+r.c[0]+","+r.c[1]+")";th.textContent=r.e;th.setAttribute("aria-hidden","true");
+    if(r.img){var im=document.createElement("img");im.alt="";im.loading="lazy";im.src=FRISCAN+r.img;im.onerror=function(){im.remove()};th.appendChild(im)}
+    if(r.img&&r.ia){var ia=el("span","iamini","IA");ia.title=IA_TXT;th.appendChild(ia)}
+    a.appendChild(th);var t=el("div","t");t.appendChild(el("b",null,r.n));
+    var inf=el("div","cinfo");[["Durée",r.min+" min","#bfe8ee"],["Personnes",String(r.pers),"#cdeccb"]].forEach(function(x){var d=el("div","ci");d.style.background=x[2];d.appendChild(el("span","k",x[0]));d.appendChild(el("span","v",x[1]));inf.appendChild(d)});
+    var cd=el("div","ci");cd.style.background=r.c[0];cd.appendChild(el("span","k","Catégorie"));cd.appendChild(el("span","v",r.cat));inf.appendChild(cd);
+    t.appendChild(inf);a.appendChild(t);g.appendChild(a)});
+  box.appendChild(g)}
 function catList(){var list=[],n={};recipes.forEach(function(r){if(!r.cat)return;if(!n[r.cat]){n[r.cat]=0;list.push(r.cat)}n[r.cat]++});
   if(recipes.length&&!list.some(isGaspi)){list.push(ANTIGASPI);n[ANTIGASPI]=0}
   return list.map(function(c){return{name:c,n:n[c]}})}
 function renderCats(box){var nav=document.createElement("nav");nav.className="cats";nav.setAttribute("aria-label","Catégories");
   var eq=document.createElement("a");eq.className="catb cateq";eq.href="#equilibre";var et=document.createElement("span"),eb=document.createElement("b");eb.textContent="Équilibre alimentaire";var es=document.createElement("small");es.textContent="Composer un menu et estimer ses calories";et.appendChild(eb);et.appendChild(es);
   var ei=document.createElement("span");ei.className="ill";ei.textContent="⚖️";ei.setAttribute("aria-hidden","true");eq.appendChild(et);eq.appendChild(ei);nav.appendChild(eq);
+  var ch=document.createElement("a");ch.className="catb";ch.href="#chrono";ch.style.background="linear-gradient(135deg,"+PAL_CHRONO[0]+","+PAL_CHRONO[1]+")";
+  var ct=document.createElement("span"),cb=document.createElement("b");cb.textContent=CHRONO;var cs=document.createElement("small");cs.textContent=rapides?rapides.length+(rapides.length>1?" recettes rapides":" recette rapide"):"Des recettes rapides, prêtes en 30 minutes";ct.appendChild(cb);ct.appendChild(cs);
+  var ci2=document.createElement("span");ci2.className="ill";ci2.textContent="⏱️";ci2.setAttribute("aria-hidden","true");ch.appendChild(ct);ch.appendChild(ci2);nav.appendChild(ch);
   catList().forEach(function(c,i){var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=catPal(c.name,i);a.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
     var t=document.createElement("span");var b=document.createElement("b");b.textContent=c.name;var sm=document.createElement("small");sm.textContent=c.n?c.n+(c.n>1?" recettes":" recette"):(isGaspi(c.name)?"Recettes et idées pour ne rien gaspiller, bientôt ici":"Bientôt des recettes");t.appendChild(b);t.appendChild(sm);
     var ill=document.createElement("span");ill.className="ill";ill.textContent=catIcon(c.name);ill.setAttribute("aria-hidden","true");
@@ -967,6 +1002,7 @@ function route(){var h=decodeURIComponent(location.hash.slice(1));
     if(!pick||pick.c!==mc)pick={c:mc,sel:menu[mc]&&menu[mc].slug||null};cat=cn0;query="";$("q").value="";document.body.classList.add("picking");renderChips();renderList();toTop();return}
   var estRecette=h&&h.indexOf("categorie-")!==0&&recipes.some(function(x){return x.slug===h});
   if(pick&&!estRecette){pick=null;document.body.classList.remove("picking");pickUpdate();renderList()}
+  if(h==="chrono"){if(current)hideRecipe();if(cat!==CHRONO){track("categorie",CHRONO);cat=CHRONO;renderChips();renderList();toTop()}return}
   if(h.indexOf("categorie-")===0){var cn=catList().filter(function(c){return"categorie-"+slug(c.name)===h})[0];
     if(current)hideRecipe();
     if(cn&&cat!==cn.name){track("categorie",cn.name);cat=cn.name;renderChips();renderList();toTop()}return}
@@ -1009,7 +1045,7 @@ if(STATS_URL)$("legal").hidden=false;
 if(COMMENT_URL){var lg=$("legal"),fm=commentBox({get name(){return current?current.name:"Commentaire général"}});fm.id="commentaire";lg.insertBefore(fm,lg.firstChild);lg.hidden=false;
   var th=$("toqueH"),tf=$("toqueF");th.hidden=false;tf.hidden=false;th.addEventListener("click",goComment);setupFab(tf)}
 initStats_();
-loadFiches();
+loadFiches();loadRapides();
 load();setInterval(load,120000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
 if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
