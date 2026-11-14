@@ -176,6 +176,7 @@ body.picking #chips{display:none}
 .chip.chipchrono[aria-pressed=true]{background:#9cc6f2;border-color:#9cc6f2}
 a.card{text-decoration:none}
 .iamini{position:absolute;top:8px;left:8px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font:700 .7rem/1 Arial,sans-serif;padding:3px 6px;border-radius:6px}
+.vegtag.eqveg{display:table;margin:4px 0 2px}
 .picksort{margin:0 0 12px;color:#000;font-weight:700;font-size:.95rem;text-align:center}
 body.picking .chef-f{display:none}
 .chip.chipeq{background:var(--vert);border-color:var(--vert);font-weight:700}
@@ -569,7 +570,7 @@ function renderEq(){var box=$("eqp");box.textContent="";
   var mn=el("div","eqmenu"),sum=0,nb=0,sans=0;
   COURSES.forEach(function(C,i){var row=el("div","eqrow"),tile=el("a","eqt");tile.href="#menu-"+C[0];var p=PAL[[0,4,1,5][i]];tile.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
     var ch=menu[C[0]],r=ch&&recipes.filter(function(x){return x.slug===ch.slug})[0],tx=el("span");
-    if(ch){tx.appendChild(el("span","lab",C[1]));tx.appendChild(el("b",null,r?r.name:ch.name));
+    if(ch){tx.appendChild(el("span","lab",C[1]));if(r&&r.veg)tx.appendChild(el("span","vegtag eqveg","Végétarien"));tx.appendChild(el("b",null,r?r.name:ch.name));
       var kc=r&&kcalRecette(r);nb++;
       if(kc&&kc.pp){sum+=kc.pp;tx.appendChild(el("span","kc","≈ "+kc.pp+" kcal / pers."))}else{sans++;tx.appendChild(el("small",null,"Calories non disponibles pour cette recette"))}
       tx.appendChild(el("small","chg","Toucher pour changer"))}
@@ -969,6 +970,7 @@ function renderChrono(box){
   if(!items.length){box.appendChild(el("p","msg","Aucune recette ne correspond."));return}
   var g=el("div","grid");
   items.forEach(function(r){var a=el("a","card");a.href=FRISCAN+"#r-"+r.id;a.style.borderTop="4px solid "+r.c[1];
+    if(/vegetarien/.test(slug(r.cat))){var vr=el("div","vegrow");vr.appendChild(el("span","vegtag","Végétarien"));a.appendChild(vr)}
     var th=el("div","thumb");th.style.background="linear-gradient(135deg,"+r.c[0]+","+r.c[1]+")";th.textContent=r.e;th.setAttribute("aria-hidden","true");
     if(r.img){var im=document.createElement("img");im.alt="";im.loading="lazy";im.src=FRISCAN+r.img;im.onerror=function(){im.remove()};th.appendChild(im)}
     if(r.img&&r.ia){var ia=el("span","iamini","IA");ia.title=IA_TXT;th.appendChild(ia)}
