@@ -494,7 +494,7 @@ function kcNorm(t){
   return s.replace(/\s+/g," ").trim()}
 function kcFood(x){if(!x)return null;for(var i=0;i<ALIM.length;i++)if(ALIM[i].re.test(x))return ALIM[i];return null}
 function kcUnit(u){return u.replace(/^bocaux$/,"bocal").replace(/^(rouleau|morceau)x$/,"$1").replace(/^conserves?$/,"boite").replace(/s$/,"")}
-function kcNum(m){var v=parseFloat(m[1].replace(",","."));if(m[2])v+=(+m[2])/(+m[3]);else if(m[4])v=v/(+m[4]);if(m[5])v=(v+parseFloat(m[5].replace(",",".")))/2;return v}
+function kcNum(m){var v=parseFloat(m[1].replace(",","."));if(m[2])v+=(+m[2])/(+m[3]);else if(m[4])v=v/(+m[4]);if(m[5]){var v2=parseFloat(m[5].replace(",","."));v=v2<v?v2:(v+v2)/2}return v}  /* « 800 à 1 kg » : on garde la 2e valeur, qui porte l'unité */
 /* analyse d'une ligne d'ingrédient : {t, g (grammes), k (kcal), st : ok | neg (négligeable) | nq (quantité non précisée) | inconnu} */
 function kcLigne(t){
   var s=kcNorm(t),o={t:t,g:0,k:0,st:"inconnu"};
@@ -523,6 +523,7 @@ function kcLigne(t){
     else if(u==="filet"){if(uu.filet)g=q*uu.filet;else ml=q*5}
     else if(u){g=pg!=null?(total?pg:q*pg):q*(per||uu[u]||KC_DEFU[u]||30)}
     else if(pg!=null)g=total?pg:q*pg;
+    else if(f.p&&f.p<10&&q>=50)g=q;  /* « 150 noix » : 150 g */
     else if(f.p)g=q*f.p;
     else if(q>=20)g=q;
     else{o.st="nq";return o}
@@ -539,7 +540,7 @@ function kcalRecette(r){var f=fiches[r.slug];if(!f||!(f.ing||[]).length)return n
   (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;
     /* certaines fiches enregistrent des ingrédients comme sous-titres : on les garde s'ils commencent par une quantité */
     if(it.l&&(/:\s*$/.test(t)||!/^\s*(?:\d|[½¼¾⅓⅔]|une?\s|environ\s)/i.test(t)))return;var a=kcLigne(t);L.push(a);if(a.st==="ok")tot+=a.k;else if(a.st==="inconnu")ko++});
-  var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0?Math.max(10,Math.round(tot/pers/10)*10):0,L:L,ko:ko}:null;
+  var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0&&tot/pers<=3000?Math.max(10,Math.round(tot/pers/10)*10):0,L:L,ko:ko}:null;
   KC[r.slug]={f:f,v:v};return v}
 var AVERT_KCAL="Estimation indicative, sans aucune valeur médicale : les calories sont calculées automatiquement à partir des ingrédients et de valeurs moyennes, pour te donner un ordre de grandeur de ce que tu es susceptible de manger.";
 
