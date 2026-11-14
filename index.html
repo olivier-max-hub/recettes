@@ -170,6 +170,8 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 body.picking:not(.view-recipe) #pickgo{display:flex}
 body.picking main{padding-bottom:90px}
 body.picking #chips{display:none}
+.chip.chipgaspi{background:#cdeccb;color:#0b4f59;border-color:#9fd89a;font-weight:700}
+.chip.chipgaspi[aria-pressed=true]{background:#9fd89a;border-color:#9fd89a}
 .picksort{margin:0 0 12px;color:#000;font-weight:700;font-size:.95rem;text-align:center}
 body.picking .chef-f{display:none}
 .chip.chipeq{background:var(--vert);border-color:var(--vert);font-weight:700}
@@ -591,8 +593,8 @@ function pickUpdate(){var bar=$("pickgo");if(!pick){bar.textContent="";return}
 function choisir(r){menu[pick.c]={slug:r.slug,name:r.name};saveMenu();track("menu",r.name);pick=null;document.body.classList.remove("picking");pickUpdate();location.replace("#equilibre");toast("C’est noté : « "+r.name+" » est dans ton menu")}
 function vegStamp(big){var s=el("span","veg"+(big?" big":""),"Végétarien");return s}
 
-function renderChips(){var cats=["Tout"];recipes.forEach(function(r){if(r.cat&&cats.indexOf(r.cat)<0)cats.push(r.cat)});if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
-  cats.forEach(function(c){var b=document.createElement("button");b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)});
+function renderChips(){var cats=["Tout"].concat(catList().map(function(c){return c.name}));if(cats.indexOf(cat)<0)cat="Tout";var box=$("chips");box.textContent="";
+  cats.forEach(function(c){var b=document.createElement("button");b.className="chip"+(isGaspi(c)?" chipgaspi":"");b.textContent=(isGaspi(c)?"♻️ ":"")+c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)});
   var eq=document.createElement("button");eq.className="chip chipeq";eq.textContent="⚖️ Équilibre alimentaire";eq.onclick=function(){location.hash="equilibre"};box.appendChild(eq)}
 /* informations des pastilles affichées sur chaque miniature (recettes dont les informations sont validées) */
 function infosCarte(r){
@@ -616,7 +618,7 @@ function renderList(){var box=$("list");box.textContent="";
   var srch=function(t){return slug(String(t||"").replace(/œ/g,"oe").replace(/Œ/g,"Oe").replace(/æ/g,"ae").replace(/Æ/g,"Ae")).replace(/-/g," ")};
   var q=srch(query);
   var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
-  if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent="Aucune recette ne correspond.";box.appendChild(p);return}
+  if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent=isGaspi(cat)&&!query.trim()?"Cette rubrique accueillera bientôt des recettes et des idées anti-gaspi, chacune sur sa propre fiche.":"Aucune recette ne correspond.";box.appendChild(p);return}
   /* choix pour le menu Équilibre alimentaire : de la moins calorique à la plus calorique, recettes sans calories à la fin */
   if(pick){var kv=function(r){var k=kcalRecette(r);return k&&k.pp?k.pp:Infinity};items=items.slice().sort(function(a,b){return kv(a)-kv(b)});
     box.appendChild(el("p","picksort","Classées de la moins à la plus calorique"))}
@@ -938,18 +940,24 @@ function initStats_(){
 function deviceType(){var ua=navigator.userAgent||"";return(/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)||isMobile())?"Mobile":"PC"}
 function isMobile(){return!!(window.matchMedia&&matchMedia("(max-width:699px)").matches)}
 var PAL=[["#bfe8ee","#8fd3dd"],["#ffd9c7","#ffb899"],["#d9d0f5","#b9a8ee"],["#fff1b8","#f8d96b"],["#cdeccb","#9fd89a"],["#ffd0e0","#f6a6c3"],["#c9e1fb","#9cc6f2"],["#ffe0b3","#fbc16b"],["#d6f0e6","#8fd6bd"],["#e9d6f2","#d0a9e6"]];
-function catIcon(c){var k=slug(c);if(/apero/.test(k))return"🥂";if(/entree/.test(k))return"🥗";if(/vegetarien/.test(k))return"🥦";if(/plat-unique/.test(k))return"🥘";if(/^plat/.test(k))return"🍲";if(/accompagn/.test(k))return"🍟";if(/salee/.test(k))return"🧂";if(/dessert/.test(k))return"🍰";if(/sucree/.test(k))return"🍯";if(/biscuit/.test(k))return"🍪";return"🍽️"}
-function catList(){var list=[],n={};recipes.forEach(function(r){if(!r.cat)return;if(!n[r.cat]){n[r.cat]=0;list.push(r.cat)}n[r.cat]++});return list.map(function(c){return{name:c,n:n[c]}})}
+function catIcon(c){var k=slug(c);if(/anti-?gaspi/.test(k))return"♻️";if(/apero/.test(k))return"🥂";if(/entree/.test(k))return"🥗";if(/vegetarien/.test(k))return"🥦";if(/plat-unique/.test(k))return"🥘";if(/^plat/.test(k))return"🍲";if(/accompagn/.test(k))return"🍟";if(/salee/.test(k))return"🧂";if(/dessert/.test(k))return"🍰";if(/sucree/.test(k))return"🍯";if(/biscuit/.test(k))return"🍪";return"🍽️"}
+/* rubrique « Anti gaspi » : toujours affichée (vert anti-gaspi), même vide ; les recettes de la catégorie « Anti gaspi » du tableau s'y rangent */
+var ANTIGASPI="Anti gaspi",PAL_GASPI=["#cdeccb","#9fd89a"];
+function isGaspi(c){return /anti-?gaspi/.test(slug(c||""))}
+function catPal(name,i){return isGaspi(name)?PAL_GASPI:PAL[i%PAL.length]}
+function catList(){var list=[],n={};recipes.forEach(function(r){if(!r.cat)return;if(!n[r.cat]){n[r.cat]=0;list.push(r.cat)}n[r.cat]++});
+  if(recipes.length&&!list.some(isGaspi)){list.push(ANTIGASPI);n[ANTIGASPI]=0}
+  return list.map(function(c){return{name:c,n:n[c]}})}
 function renderCats(box){var nav=document.createElement("nav");nav.className="cats";nav.setAttribute("aria-label","Catégories");
   var eq=document.createElement("a");eq.className="catb cateq";eq.href="#equilibre";var et=document.createElement("span"),eb=document.createElement("b");eb.textContent="Équilibre alimentaire";var es=document.createElement("small");es.textContent="Composer un menu et estimer ses calories";et.appendChild(eb);et.appendChild(es);
   var ei=document.createElement("span");ei.className="ill";ei.textContent="⚖️";ei.setAttribute("aria-hidden","true");eq.appendChild(et);eq.appendChild(ei);nav.appendChild(eq);
-  catList().forEach(function(c,i){var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=PAL[i%PAL.length];a.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
-    var t=document.createElement("span");var b=document.createElement("b");b.textContent=c.name;var sm=document.createElement("small");sm.textContent=c.n+(c.n>1?" recettes":" recette");t.appendChild(b);t.appendChild(sm);
+  catList().forEach(function(c,i){var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=catPal(c.name,i);a.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
+    var t=document.createElement("span");var b=document.createElement("b");b.textContent=c.name;var sm=document.createElement("small");sm.textContent=c.n?c.n+(c.n>1?" recettes":" recette"):(isGaspi(c.name)?"Recettes et idées pour ne rien gaspiller, bientôt ici":"Bientôt des recettes");t.appendChild(b);t.appendChild(sm);
     var ill=document.createElement("span");ill.className="ill";ill.textContent=catIcon(c.name);ill.setAttribute("aria-hidden","true");
     a.appendChild(t);a.appendChild(ill);nav.appendChild(a)});
   box.appendChild(nav)}
 function backBar(){var d=document.createElement("div");d.className="backbar";var a=document.createElement("a");a.className="btn alt";a.href="#";a.textContent="← Catégories";var w=document.createElement("div");w.className="cwrap";var t=document.createElement("b");t.className="cpill";t.textContent=cat;
-  var i=catList().map(function(c){return c.name}).indexOf(cat);if(i<0)i=0;var p=PAL[i%PAL.length];t.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
+  var i=catList().map(function(c){return c.name}).indexOf(cat);if(i<0)i=0;var p=catPal(cat,i);t.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
   w.appendChild(t);d.appendChild(a);d.appendChild(w);return d}
 function route(){var h=decodeURIComponent(location.hash.slice(1));
   if(h==="equilibre"){if(pick){pick=null;document.body.classList.remove("picking");pickUpdate()}if(current)hideRecipe();showEq();return}
