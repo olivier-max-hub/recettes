@@ -618,7 +618,7 @@ function renderList(){var box=$("list");box.textContent="";
   var srch=function(t){return slug(String(t||"").replace(/œ/g,"oe").replace(/Œ/g,"Oe").replace(/æ/g,"ae").replace(/Æ/g,"Ae")).replace(/-/g," ")};
   var q=srch(query);
   var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
-  if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent=isGaspi(cat)&&!query.trim()?"Cette rubrique accueillera bientôt des recettes et des idées anti-gaspi, chacune sur sa propre fiche.":"Aucune recette ne correspond.";box.appendChild(p);return}
+  if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent=isGaspi(cat)&&!query.trim()?"Cette rubrique accueillera bientôt des recettes et des idées anti-gaspi":"Aucune recette ne correspond.";box.appendChild(p);return}
   /* choix pour le menu Équilibre alimentaire : de la moins calorique à la plus calorique, recettes sans calories à la fin */
   if(pick){var kv=function(r){var k=kcalRecette(r);return k&&k.pp?k.pp:Infinity};items=items.slice().sort(function(a,b){return kv(a)-kv(b)});
     box.appendChild(el("p","picksort","Classées de la moins à la plus calorique"))}
