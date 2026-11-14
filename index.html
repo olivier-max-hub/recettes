@@ -319,8 +319,8 @@ var ALIM=[
  A(/cognac|rhum|vermouth|armagnac|calvados|whisky|vodka|kirsch|grand marnier|cointreau|amaretto|liqueur|alcool|eau[- ]de[- ]vie/,230,{d:.95}),
  A(/jus d'oranges?|jus de pommes?|jus de fruits?|jus d'ananas|jus de raisin/,45,{d:1}),
  A(/jus de citron/,25,{d:1}),
- A(/jaunes? d'?oeufs?|\bjaunes?\b/,330,{p:18}),
- A(/blancs? d'?oeufs?|^blancs?\b|\bblancs?$/,47,{p:33}),
+ A(/jaunes? d'?oeufs?|^jaunes?$/,330,{p:18}),
+ A(/blancs? d'?oeufs?|^blancs?$/,47,{p:33}),
  A(/\boeufs?\b/,140,{p:55}),
  A(/fecule|maizena|amidon/,350,{cs:10,d:.6}),
  A(/farine/,345,{cs:10,d:.55}),
@@ -537,11 +537,11 @@ function persNb(f){var m=String((f.m&&f.m.pers)||f.pers||"").match(/\d+/),n=m?+m
 var KC={};
 /* estimation pour une recette : {tot, pers, pp (kcal par personne, arrondies à 10), L (détail), ko (lignes non reconnues)} */
 function kcalRecette(r){var f=fiches[r.slug];if(!f||!(f.ing||[]).length)return null;var c=KC[r.slug];if(c&&c.f===f)return c.v;
-  var L=[],tot=0,ko=0;
+  var L=[],tot=0,ko=0,ok=0,nq=0;
   (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;
     /* certaines fiches enregistrent des ingrédients comme sous-titres : on les garde s'ils commencent par une quantité */
-    if(it.l&&(/:\s*$/.test(t)||!/^\s*(?:\d|[½¼¾⅓⅔]|une?\s|environ\s)/i.test(t)))return;var a=kcLigne(t);L.push(a);if(a.st==="ok")tot+=a.k;else if(a.st==="inconnu")ko++});
-  var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0&&tot/pers<=3000?Math.max(10,Math.round(tot/pers/10)*10):0,L:L,ko:ko}:null;
+    if(it.l&&(/:\s*$/.test(t)||!/^\s*(?:\d|[½¼¾⅓⅔]|une?\s|environ\s)/i.test(t)))return;var a=kcLigne(t);L.push(a);if(a.st==="ok"){tot+=a.k;ok++}else if(a.st==="inconnu")ko++;else if(a.st==="nq")nq++});
+  var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0&&tot/pers<=3000&&ko+nq<=ok?Math.max(10,Math.round(tot/pers/10)*10):0,L:L,ko:ko}:null;
   KC[r.slug]={f:f,v:v};return v}
 var AVERT_KCAL="Estimation indicative, sans aucune valeur médicale : les calories sont calculées automatiquement à partir des ingrédients et de valeurs moyennes, pour te donner un ordre de grandeur de ce que tu es susceptible de manger.";
 
@@ -886,7 +886,7 @@ function showRecipe(r,silent){
 function kcalDetail(kc){var d=el("details","kdet"),sm=el("summary",null,kc.pp?"Comment les calories sont estimées":"Calories : estimation impossible pour cette recette");d.appendChild(sm);
   d.appendChild(el("p","note",AVERT_KCAL+" Ce n’est pas une donnée médicale."));
   if(kc.pp)d.appendChild(el("p",null,"Total de la recette ≈ "+Math.round(kc.tot/10)*10+" kcal, divisé par "+kc.pers+(kc.pers>1?" personnes":" personne")+" ≈ "+kc.pp+" kcal par personne."));
-  else d.appendChild(el("p",null,!kc.pers?"Le nombre de personnes n’est pas indiqué sur la fiche.":"Aucun ingrédient n’a pu être chiffré."));
+  else d.appendChild(el("p",null,!kc.pers?"Le nombre de personnes n’est pas indiqué sur la fiche.":kc.tot>0?"Trop d’ingrédients n’ont pas de quantité précise sur la fiche pour donner une estimation fiable.":"Aucun ingrédient n’a pu être chiffré."));
   var tb=el("table"),lab={neg:"négligeable",nq:"quantité non précisée",inconnu:"non reconnu"};
   kc.L.forEach(function(a){var tr=el("tr");tr.appendChild(el("td",null,a.t));
     if(a.st==="ok"){tr.appendChild(el("td","n","≈ "+a.g+" g"));tr.appendChild(el("td","n",a.k+" kcal"))}else{var x=el("td","n x",lab[a.st]);x.colSpan=2;tr.appendChild(x)}tb.appendChild(tr)});
