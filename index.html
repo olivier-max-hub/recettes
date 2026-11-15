@@ -221,6 +221,12 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 .kdet .x{color:#000;font-weight:700;font-style:italic}
 .kdet .note{font-weight:700}
 .rpill.kc small{color:#fff}
+/* ===== Budget estimé (cookapli/budget.js) ===== */
+:root{--budget:#7a4d00}
+.ci.bu{background:var(--budget);color:#fff}.ci.bu .k{color:#fff}
+.rpill.bu{background:var(--budget);color:#fff;grid-column:1/-1}.rpill.bu small{color:#fff}
+.rpill.bu .butot{display:block;margin-top:4px;font-size:1.05rem;font-weight:700;color:#fff}
+.kdet.budet summary{color:var(--budget)}
 </style>
 </head>
 <body>
@@ -240,6 +246,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 <div id="sharebar" hidden><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
+<script src="../cookapli/budget.js?v=1"></script>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
 var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
@@ -551,6 +558,31 @@ function kcalRecette(r){var f=fiches[r.slug];if(!f||!(f.ing||[]).length)return n
   var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0&&tot/pers<=3000&&ko+nq<=ok?Math.max(10,Math.round(tot/pers/10)*10):0,L:L,ko:ko}:null;
   KC[r.slug]={f:f,v:v};return v}
 var AVERT_KCAL="Estimation indicative, sans aucune valeur médicale : les calories sont calculées automatiquement à partir des ingrédients et de valeurs moyennes, pour te donner un ordre de grandeur de ce que tu es susceptible de manger.";
+/* ================= Budget estimé (outil indicatif) =================
+   Prix moyens au kilo de ../cookapli/prix.json (Open Prices, Open Food Facts), voir ../cookapli/budget.js.
+   Chaque ligne d'ingrédient est convertie en grammes (même analyse que les calories), reliée à un ingrédient
+   du référentiel Friscan (ckGuess), puis multipliée par son prix moyen. On affiche un niveau (€, €€, €€€). */
+var BU={};
+function budgetRecette(r){if(typeof CookBudget==="undefined"||!CookBudget.pret()||typeof ING==="undefined")return null;
+  var f=fiches[r.slug];if(!f||!(f.ing||[]).length)return null;var c=BU[r.slug];if(c&&c.f===f)return c.v;
+  var L=[],tot=0,ok=0,ko=0;
+  (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;
+    if(it.l&&(/:\s*$/.test(t)||!/^\s*(?:\d|[½¼¾⅓⅔]|une?\s|environ\s)/i.test(t)))return;
+    var a=kcLigne(t),id=ckGuess(t),e=id?CookBudget.prixKg(id):null,x={t:t,g:a.g,e:0,st:a.st};
+    if(a.st==="neg")ok++;else if(a.st==="ok"&&e!=null){x.e=a.g/1000*e;tot+=x.e;ok++}else{if(a.st==="ok")x.st="prix";ko++}
+    L.push(x)});
+  var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0&&ko*3<=ok?tot/pers:0,L:L,ko:ko}:null;
+  if(v&&v.pp)v.niv=CookBudget.niveau(v.pp);BU[r.slug]={f:f,v:v};return v}
+function budgetDetail(bu){var d=el("details","kdet budet"),sm=el("summary",null,bu.pp?"Comment le budget est estimé":"Budget : estimation impossible pour cette recette");d.appendChild(sm);
+  d.appendChild(el("p",null,CookBudget.AVERT));
+  if(bu.pp)d.appendChild(el("p",null,"Coût estimé de la recette pour "+bu.pers+(bu.pers>1?" personnes":" personne")+" : "+CookBudget.fourchette(bu.tot)+". Repères par personne : € = moins de 1,50 €, €€ = de 1,50 € à 3 €, €€€ = plus de 3 €."));
+  var tb=el("table"),lab={neg:"quantité négligeable",nq:"quantité non précisée",inconnu:"ingrédient non reconnu",prix:"prix non disponible"};
+  bu.L.forEach(function(a){var tr=el("tr");tr.appendChild(el("td",null,a.t));
+    if(a.st==="ok"){tr.appendChild(el("td","n","≈ "+a.g+" g"));tr.appendChild(el("td","n","≈ "+CookBudget.euros(a.e)))}else{var x=el("td","n x",lab[a.st]||"—");x.colSpan=2;tr.appendChild(x)}tb.appendChild(tr)});
+  d.appendChild(tb);
+  var src=el("p","note","Prix moyens relevés en France, mis à jour chaque mois"+(CookBudget.dateMaj()?" (dernière mise à jour : "+CookBudget.dateMaj()+")":"")+". Source : ");
+  var a=document.createElement("a");a.href="https://prices.openfoodfacts.org/";a.target="_blank";a.rel="noopener";a.textContent="Open Prices – Open Food Facts";src.appendChild(a);src.appendChild(document.createTextNode(" (licence ODbL)."));d.appendChild(src);
+  return d}
 
 /* ================= Équilibre alimentaire : composition d'un menu ================= */
 var COURSES=[["entree","Entrée",/^entree/,"🥗"],["plat","Plat",/^plat/,"🍲"],["accompagnement","Accompagnement",/^accompagn/,"🍟"],["dessert","Dessert",/^dessert/,"🍰"]];
@@ -607,9 +639,10 @@ function infosCarte(r){
   var f=fiches[r.slug];if(!f||!f.m)return null;
   var L=[["Durée",duree(f.m.prep),"#bfe8ee"],["Cuisson",cuis(f.m.cuisson),"#ffd9c7"],["Personnes",vide(f.m.pers),"#cdeccb"],["Difficulté",vide(f.m.diff),"#fff1b8"]];
   var kc=kcalRecette(r);if(kc&&kc.pp)L.push(["Calories / pers.","≈ "+kc.pp+" kcal",null,"kc"]);
+  var bu=budgetRecette(r);if(bu&&bu.pp)L.push(["Budget / pers.",bu.niv.s+" · "+bu.niv.t,null,"bu"]);
   var box=document.createElement("div");box.className="cinfo";
   L.forEach(function(x){if(!x[1])return;
-    var d=document.createElement("div");d.className="ci"+(x[3]?" "+x[3]:"");if(x[2])d.style.background=x[2];if(x[3])d.title=AVERT_KCAL;
+    var d=document.createElement("div");d.className="ci"+(x[3]?" "+x[3]:"");if(x[2])d.style.background=x[2];if(x[3])d.title=x[3]==="bu"?CookBudget.AVERT:AVERT_KCAL;
     var k=document.createElement("span");k.className="k";k.textContent=x[0];
     var v=document.createElement("span");v.className="v";
     if(x[0]==="Difficulté"){var c={Facile:"#1f7a43",Moyen:"#a85f00",Difficile:"#b3261e"}[x[1]];if(c)v.style.color=c}
@@ -842,7 +875,7 @@ function persStepper(base,onChange){var w=el("div","pers"),n=base,v=el("b",null,
 function showRecipe(r,silent){
   if(!silent){track("recette",r.name);window.scrollTo(0,0)}
   current=r;var f=fiches[r.slug],box=$("rp");box.textContent="";
-  persN=f&&f.m?persBase(f.m.pers):0;drawIng=function(){};
+  persN=f&&f.m?persBase(f.m.pers):0;drawIng=function(){};var majBu=function(){};
   document.body.classList.add("view-recipe");$("recipe").hidden=false;
   function bar(){var b=el("div","rbar");var back=el("a","btn alt","← Livre de recettes");back.href="#";back.onclick=function(e){e.preventDefault();leaveRecipe()};b.appendChild(back);
     if(pick&&r.cat===courseCat(pick.c)){var pc=el("button","btn vbtn","✓ Choisir pour mon menu ("+course(pick.c)[1]+")");pc.type="button";pc.onclick=function(){hideRecipe();choisir(r)};b.appendChild(pc)}
@@ -860,12 +893,16 @@ function showRecipe(r,silent){
   var pills=el("div","rpills");
   (f&&f.m?[["DURÉE PRÉPARATION",duree(f.m.prep),"#bfe8ee"],["CUISSON",cuis(f.m.cuisson),"#ffd9c7"],["NOMBRE DE PERSONNES",vide(f.m.pers),"#cdeccb"],["DIFFICULTÉ",vide(f.m.diff),"#fff1b8"]]:[["CATÉGORIE",r.cat,"#bfe8ee"],["TYPE",r.type,"#cdeccb"],["RÉGION",r.region,"#fff1b8"],["CUISSON",f&&f.cuisson,"#ffd9c7"]]).forEach(function(p){
     if(!p[1]||p[1]==="—")return;var d=el("div","rpill");d.style.background=p[2];d.appendChild(el("small",null,p[0]));
-    if(p[0]==="NOMBRE DE PERSONNES"&&f&&persBase(f.m.pers)){d.appendChild(persStepper(persBase(f.m.pers),function(n){persN=n;drawIng()}));pills.appendChild(d);return}
+    if(p[0]==="NOMBRE DE PERSONNES"&&f&&persBase(f.m.pers)){d.appendChild(persStepper(persBase(f.m.pers),function(n){persN=n;drawIng();majBu()}));pills.appendChild(d);return}
     d.appendChild(el("b",null,p[1]));pills.appendChild(d)});
   var kc=kcalRecette(r);
   if(kc&&kc.pp){var kd=el("div","rpill kc");kd.title=AVERT_KCAL;kd.appendChild(el("small",null,"CALORIES / PERSONNE"));kd.appendChild(el("b",null,"≈ "+kc.pp+" kcal"));pills.appendChild(kd)}
+  var bu=budgetRecette(r);
+  if(bu&&bu.pp){var bd=el("div","rpill bu");bd.title=CookBudget.AVERT;bd.appendChild(el("small",null,"BUDGET / PERSONNE"));bd.appendChild(el("b",null,bu.niv.s+" · "+bu.niv.t));var bt=el("span","butot");bt.setAttribute("aria-live","polite");bd.appendChild(bt);pills.appendChild(bd);
+    majBu=function(){var n=persN||bu.pers;bt.textContent="Pour "+n+" personne"+(n>1?"s":"")+" : "+CookBudget.fourchette(bu.pp*n)};majBu()}
   if(pills.children.length)box.appendChild(pills);
   if(kc)box.appendChild(kcalDetail(kc));
+  if(bu)box.appendChild(budgetDetail(bu));
   if(f){
     var s1=el("section","rsec");s1.appendChild(el("h3",null,titreIngredients_(f.ingTitle)));
     var ib=el("div","rbox rcols"),pnote=el("p","persnote");pnote.hidden=true;
@@ -1027,6 +1064,8 @@ function route(){var h=decodeURIComponent(location.hash.slice(1));
     if(isMobile()&&cat!=="Tout"){cat="Tout";renderChips();renderList();toTop()}return}
   var r=recipes.filter(function(x){return x.slug===h})[0];if(r&&(!current||current.slug!==h))showRecipe(r)}
 window.addEventListener("hashchange",route);
+/* budget estimé : référentiel Friscan + prix moyens, puis on redessine la vue en cours */
+if(typeof CookBudget!=="undefined")ckLoadING(function(){CookBudget.charger().then(function(d){if(!d||typeof ING==="undefined")return;BU={};if(current&&!$("recipe").hidden)showRecipe(current,true);else renderList()})});
 (function(){var mq=window.matchMedia&&matchMedia("(max-width:699px)");if(!mq)return;var f=function(){renderChips();renderList()};if(mq.addEventListener)mq.addEventListener("change",f);else if(mq.addListener)mq.addListener(f)})();
 $("q").addEventListener("input",function(e){query=e.target.value;renderList()});
 $("shareLink").addEventListener("click",function(e){e.preventDefault();track("partage","site");var url=location.origin+location.pathname;
