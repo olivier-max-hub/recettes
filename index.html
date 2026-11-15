@@ -228,6 +228,15 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 .rpill.bu .butot{display:block;margin-top:4px;font-size:1.05rem;font-weight:700;color:#fff}
 .kdet.budet summary{color:var(--budget)}
 .ci.bu1,.rpill.bu1{background:var(--bu1)}.ci.bu2,.rpill.bu2{background:var(--bu2)}.ci.bu3,.rpill.bu3{background:var(--bu3)}
+/* bouton Commentaire : seulement la tête du cuisinier, en haut de la page (téléphone et ordinateur), comme sur l'accueil Cookapli */
+.chef:not([hidden]){display:flex!important;padding:3px;gap:0}
+.chef span{display:none}
+.chef svg{width:40px!important;height:40px!important}
+.chef-f,.chef.chef-f:not([hidden]){display:none!important}
+.chefpop{position:absolute;right:0;top:calc(100% + 4px);z-index:30;background:#fff;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.25);padding:10px 16px}
+.chefpop[hidden]{display:none}
+.chefpop::before{content:"";position:absolute;top:-7px;right:16px;width:14px;height:14px;background:#fff;transform:rotate(45deg)}
+.chefpop a{position:relative;display:flex;align-items:center;min-height:32px;color:#0f6b78;font-weight:700;font-size:1.15rem;text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
@@ -852,6 +861,17 @@ loadFiches();loadRapides();
 load();setInterval(load,120000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
 if("serviceWorker" in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+/* tête du cuisinier : un appui ouvre une petite bulle avec le lien « Commentaire », qui mène au formulaire en bas de page */
+(function(){var th=document.getElementById("toqueH");if(!th)return;
+  th.setAttribute("aria-label","Commentaire");th.setAttribute("aria-haspopup","true");th.setAttribute("aria-expanded","false");
+  var pop=document.createElement("div");pop.className="chefpop";pop.hidden=true;var a=document.createElement("a");a.href="#commentaire";a.textContent="Commentaire";pop.appendChild(a);
+  th.parentNode.insertBefore(pop,th.nextSibling);
+  var pr=th.parentNode;if(getComputedStyle(pr).position==="static")pr.style.position="relative";
+  function show(o){if(o){pop.style.top=(th.offsetTop+th.offsetHeight+10)+"px";pop.style.right=Math.max(0,pr.clientWidth-th.offsetLeft-th.offsetWidth)+"px"}pop.hidden=!o;th.setAttribute("aria-expanded",String(o))}
+  th.addEventListener("click",function(e){e.preventDefault();e.stopImmediatePropagation();show(pop.hidden)},true);
+  a.addEventListener("click",function(e){show(false);goComment(e)});
+  document.addEventListener("click",function(e){if(!pop.hidden&&!pop.contains(e.target)&&!th.contains(e.target))show(false)});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")show(false)})})();
 </script>
 </body>
 </html>
