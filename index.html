@@ -764,6 +764,8 @@ function renderChrono(box){
     a.appendChild(th);var t=el("div","t");t.appendChild(el("b",null,r.n));
     var inf=el("div","cinfo");[["Durée",r.min+" min","#bfe8ee"],["Personnes",String(r.pers),"#cdeccb"]].forEach(function(x){var d=el("div","ci");d.style.background=x[2];d.appendChild(el("span","k",x[0]));d.appendChild(el("span","v",x[1]));inf.appendChild(d)});
     var cd=el("div","ci");cd.style.background=r.c[0];cd.appendChild(el("span","k","Catégorie"));cd.appendChild(el("span","v",r.cat));inf.appendChild(cd);
+    /* recettes rapides : pas de difficulté, une pastille « 30 minutes chrono » à la place (toutes sont simples) */
+    var dc=el("div","ci");dc.style.background=PAL_CHRONO[0];dc.appendChild(el("span","k","⏱️ Rapide"));dc.appendChild(el("span","v","30 minutes chrono"));inf.appendChild(dc);
     /* calories et budget des recettes rapides : référentiel Friscan (ING) + ../cookapli/budget.js */
     if(r.ing&&typeof ING!=="undefined"&&typeof CookBudget!=="undefined"&&CookBudget.kcalFriscan){
       var kf=CookBudget.kcalFriscan(r,ING);if(kf){var dk=el("div","ci kc");dk.title=AVERT_KCAL;dk.appendChild(el("span","k","Calories / pers."));dk.appendChild(el("span","v","≈ "+kf+" kcal"));inf.appendChild(dk)}
