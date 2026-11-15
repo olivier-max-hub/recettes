@@ -365,10 +365,13 @@ function pickUpdate(){var bar=$("pickgo");if(!pick){bar.textContent="";return}
 function choisir(r){menu[pick.c]={slug:r.slug,name:r.name};saveMenu();track("menu",r.name);pick=null;document.body.classList.remove("picking");pickUpdate();location.replace("#equilibre");toast("C’est noté : « "+r.name+" » est dans ton menu")}
 function vegStamp(big){var s=el("span","veg"+(big?" big":""),"Végétarien");return s}
 
-function renderChips(){var cats=["Tout"].concat(catList().map(function(c){return c.name}));if(cats.indexOf(cat)<0&&cat!==CHRONO)cat="Tout";var box=$("chips");box.textContent="";
-  cats.forEach(function(c){var b=document.createElement("button");b.className="chip"+(isGaspi(c)?" chipgaspi":"");b.textContent=(isGaspi(c)?"♻️ ":"")+c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)});
+function renderChips(){var names=catList().map(function(c){return c.name}),cats=["Tout"].concat(names);if(cats.indexOf(cat)<0&&cat!==CHRONO)cat="Tout";var box=$("chips");box.textContent="";
+  function chip(c){var b=document.createElement("button");b.className="chip"+(isGaspi(c)?" chipgaspi":"");b.textContent=(isGaspi(c)?"♻️ ":"")+c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)}
+  /* même ordre que les tuiles : Tout, 30 minutes chrono, Équilibre alimentaire, Anti gaspi, puis les catégories */
+  chip("Tout");
   var chb=document.createElement("button");chb.className="chip chipchrono";chb.textContent="⏱️ "+CHRONO;chb.setAttribute("aria-pressed",cat===CHRONO);chb.onclick=function(){location.hash="chrono"};box.appendChild(chb);
-  var eq=document.createElement("button");eq.className="chip chipeq";eq.textContent="⚖️ Équilibre alimentaire";eq.onclick=function(){location.hash="equilibre"};box.appendChild(eq)}
+  var eq=document.createElement("button");eq.className="chip chipeq";eq.textContent="⚖️ Équilibre alimentaire";eq.onclick=function(){location.hash="equilibre"};box.appendChild(eq);
+  names.filter(isGaspi).concat(names.filter(function(c){return!isGaspi(c)})).forEach(chip)}
 /* informations des pastilles affichées sur chaque miniature (recettes dont les informations sont validées) */
 function infosCarte(r){
   var f=fiches[r.slug];if(!f||!f.m)return null;
@@ -777,11 +780,14 @@ function catList(){var list=[],n={};recipes.forEach(function(r){if(!r.cat)return
   return list.map(function(c){return{name:c,n:n[c]}})}
 function renderCats(box){var nav=document.createElement("nav");nav.className="cats";nav.setAttribute("aria-label","Catégories");
   var eq=document.createElement("a");eq.className="catb cateq";eq.href="#equilibre";var et=document.createElement("span"),eb=document.createElement("b");eb.textContent="Équilibre alimentaire";var es=document.createElement("small");es.textContent="Composer un menu et estimer ses calories";et.appendChild(eb);et.appendChild(es);
-  var ei=document.createElement("span");ei.className="ill";ei.textContent="⚖️";ei.setAttribute("aria-hidden","true");eq.appendChild(et);eq.appendChild(ei);nav.appendChild(eq);
+  var ei=document.createElement("span");ei.className="ill";ei.textContent="⚖️";ei.setAttribute("aria-hidden","true");eq.appendChild(et);eq.appendChild(ei);
   var ch=document.createElement("a");ch.className="catb";ch.href="#chrono";ch.style.background="linear-gradient(135deg,"+PAL_CHRONO[0]+","+PAL_CHRONO[1]+")";
   var ct=document.createElement("span"),cb=document.createElement("b");cb.textContent=CHRONO;var cs=document.createElement("small");cs.textContent=rapides?rapides.length+(rapides.length>1?" recettes rapides":" recette rapide"):"Des recettes rapides, prêtes en 30 minutes";ct.appendChild(cb);ct.appendChild(cs);
-  var ci2=document.createElement("span");ci2.className="ill";ci2.textContent="⏱️";ci2.setAttribute("aria-hidden","true");ch.appendChild(ct);ch.appendChild(ci2);nav.appendChild(ch);
-  catList().forEach(function(c,i){var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=catPal(c.name,i);a.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
+  var ci2=document.createElement("span");ci2.className="ill";ci2.textContent="⏱️";ci2.setAttribute("aria-hidden","true");ch.appendChild(ct);ch.appendChild(ci2);
+  /* ordre voulu par Olivier (15/11/2026) : 30 minutes chrono, Équilibre alimentaire, Anti gaspi, puis les catégories */
+  nav.appendChild(ch);nav.appendChild(eq);
+  var cl=catList().map(function(c,i){return{c:c,i:i}});
+  cl.filter(function(x){return isGaspi(x.c.name)}).concat(cl.filter(function(x){return!isGaspi(x.c.name)})).forEach(function(x){var c=x.c,i=x.i;var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=catPal(c.name,i);a.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
     var t=document.createElement("span");var b=document.createElement("b");b.textContent=c.name;var sm=document.createElement("small");sm.textContent=c.n?c.n+(c.n>1?" recettes":" recette"):(isGaspi(c.name)?"Recettes et idées pour ne rien gaspiller, bientôt ici":"Bientôt des recettes");t.appendChild(b);t.appendChild(sm);
     var ill=document.createElement("span");ill.className="ill";ill.textContent=catIcon(c.name);ill.setAttribute("aria-hidden","true");
     a.appendChild(t);a.appendChild(ill);nav.appendChild(a)});
