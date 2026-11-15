@@ -952,7 +952,7 @@ function catIcon(c){var k=slug(c);if(/anti-?gaspi/.test(k))return"♻️";if(/ap
 var ANTIGASPI="Anti gaspi",PAL_GASPI=["#cdeccb","#9fd89a"];
 function isGaspi(c){return /anti-?gaspi/.test(slug(c||""))}
 function catPal(name,i){return name===CHRONO?PAL_CHRONO:isGaspi(name)?PAL_GASPI:PAL[i%PAL.length]}
-/* ===== 30 minutes chrono : recettes rapides validées de Friscan (friscan/data.js, champ ok), chaque fiche s'ouvre dans Friscan ===== */
+/* ===== 30 minutes chrono : recettes du Livre prêtes en 30 min + recettes rapides validées de Friscan (friscan/data.js, champ ok, ouvertes dans Friscan) ===== */
 var CHRONO="30 minutes chrono",PAL_CHRONO=["#c9e1fb","#9cc6f2"],rapides=null,FRISCAN="../friscan/";
 var IA_TXT="Photo d’illustration créée par IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle.";
 try{var rc=JSON.parse(localStorage.getItem("recettes-rapides")||"null");if(rc&&rc.length)rapides=rc}catch(e){}
@@ -962,14 +962,29 @@ function loadRapides(){fetch(FRISCAN+"data.js?t="+Date.now()).then(function(r){i
   try{localStorage.setItem("recettes-rapides",JSON.stringify(rapides))}catch(e){}
   if(!current&&recipes.length){renderChips();renderList()}
 }).catch(function(){})}
+/* durée en minutes : « 1 h 20 » → 80, « 20 à 25 min » → 25 (la plus longue), « 1 h 15 + 10 min » → 85, « 0 » ou « Sans cuisson » → 0, illisible → null */
+function dureeMin(v){var n=slug(String(v||"")).replace(/-/g," ").trim();if(!n||/^(sans cuisson|0( min| mn)?)$/.test(n))return 0;var tot=0,ok=false;
+  String(v).split("+").forEach(function(p){p=slug(p).replace(/-/g," ").replace(/(\d+) (?:a|ou) (\d+)/g,"$2");var m=p.match(/(\d+) h(?:eures?)?(?: (\d+))?/);if(m){tot+=m[1]*60+(+m[2]||0);ok=true;return}m=p.match(/(\d+)/);if(m){tot+=+m[1];ok=true}});
+  return ok?tot:null}
+/* recette du Livre prête en 30 minutes : préparation + cuisson de la fiche, sans les préparations (pâtes, sauces, glaçages…) */
+function livreMin(r){var f=fiches[r.slug];if(!f||!f.m||!vide(f.m.prep))return null;var p=dureeMin(f.m.prep),c=dureeMin(f.m.cuisson);return p==null||c==null?null:p+c}
+function livreChrono(r){var t=livreMin(r);return t!=null&&t<=30&&!/preparation/.test(slug(r.cat||""))}
 function renderChrono(box){
   if(isMobile())box.appendChild(backBar());
-  if(!rapides){box.appendChild(el("p","msg","Chargement des recettes rapides…"));return}
-  var q=slug(query).replace(/-/g," "),items=rapides.filter(function(r){return!q||slug(r.n+" "+r.cat).replace(/-/g," ").indexOf(q)>=0});
-  box.appendChild(el("p","picksort","Des recettes rapides validées, prêtes en 30 minutes au maximum. Chaque fiche s’ouvre dans Friscan."));
+  var q=slug(query).replace(/-/g," "),ok=function(t){return!q||slug(t).replace(/-/g," ").indexOf(q)>=0};
+  var items=(rapides||[]).filter(function(r){return ok(r.n+" "+r.cat)}).map(function(r){return{f:r,min:r.min,n:r.n}})
+    .concat(recipes.filter(function(r){return livreChrono(r)&&ok(r.name+" "+r.cat+" "+r.type)}).map(function(r){return{l:r,min:livreMin(r),n:r.name}}))
+    .sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")});
+  box.appendChild(el("p","picksort","Des recettes prêtes en 30 minutes au maximum, préparation et cuisson comprises : celles du Livre et les recettes rapides de Friscan, qui s’ouvrent dans Friscan."));
+  if(!rapides&&!items.length){box.appendChild(el("p","msg","Chargement des recettes rapides…"));return}
   if(!items.length){box.appendChild(el("p","msg","Aucune recette ne correspond."));return}
   var g=el("div","grid");
-  items.forEach(function(r){var a=el("a","card");a.href=FRISCAN+"#r-"+r.id;a.style.borderTop="4px solid "+r.c[1];
+  items.forEach(function(it){
+    if(it.l){var r=it.l,b=el("button","card");b.style.borderTop="4px solid "+PAL_CHRONO[1];
+      if(r.veg){var v2=el("div","vegrow");v2.appendChild(el("span","vegtag","Végétarien"));b.appendChild(v2)}
+      b.appendChild(thumb(r));var t2=el("div","t");t2.appendChild(el("b",null,r.name));var inf2=infosCarte(r);if(inf2)t2.appendChild(inf2);b.appendChild(t2);
+      b.dataset.slug=r.slug;b.onclick=function(){viaList=true;location.hash=r.slug};g.appendChild(b);return}
+    var r=it.f,a=el("a","card");a.href=FRISCAN+"#r-"+r.id;a.style.borderTop="4px solid "+r.c[1];
     if(/vegetarien/.test(slug(r.cat))){var vr=el("div","vegrow");vr.appendChild(el("span","vegtag","Végétarien"));a.appendChild(vr)}
     var th=el("div","thumb");th.style.background="linear-gradient(135deg,"+r.c[0]+","+r.c[1]+")";th.textContent=r.e;th.setAttribute("aria-hidden","true");
     if(r.img){var im=document.createElement("img");im.alt="";im.loading="lazy";im.src=FRISCAN+r.img;im.onerror=function(){im.remove()};th.appendChild(im)}
