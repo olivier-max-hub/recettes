@@ -247,7 +247,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 <div id="sharebar" hidden><a href="." id="shareLink">Partager</a></div>
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
-<script src="../cookapli/budget.js?v=1"></script>
+<script src="../cookapli/budget.js?v=2"></script>
 <script src="calories.js?v=1"></script>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
@@ -730,7 +730,7 @@ var IA_TXT="Photo d’illustration créée par IA, en attendant une vraie photo 
 try{var rc=JSON.parse(localStorage.getItem("recettes-rapides")||"null");if(rc&&rc.length)rapides=rc}catch(e){}
 function loadRapides(){fetch(FRISCAN+"data.js?t="+Date.now()).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
   var d=new Function(t+";return {R:RECETTES,C:CATS}")();
-  rapides=d.R.filter(function(r){return r.ok&&r.min<=30}).sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")}).map(function(r){return{id:r.id,n:r.n,e:r.e,cat:r.cat,min:r.min,pers:r.pers,img:r.img||"",ia:r.ia?1:0,c:d.C[r.cat]||PAL_CHRONO}});
+  rapides=d.R.filter(function(r){return r.ok&&r.min<=30}).sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")}).map(function(r){return{id:r.id,n:r.n,e:r.e,cat:r.cat,min:r.min,pers:r.pers,img:r.img||"",ia:r.ia?1:0,c:d.C[r.cat]||PAL_CHRONO,ing:r.ing}});
   try{localStorage.setItem("recettes-rapides",JSON.stringify(rapides))}catch(e){}
   if(!current&&recipes.length){renderChips();renderList()}
 }).catch(function(){})}
@@ -764,6 +764,10 @@ function renderChrono(box){
     a.appendChild(th);var t=el("div","t");t.appendChild(el("b",null,r.n));
     var inf=el("div","cinfo");[["Durée",r.min+" min","#bfe8ee"],["Personnes",String(r.pers),"#cdeccb"]].forEach(function(x){var d=el("div","ci");d.style.background=x[2];d.appendChild(el("span","k",x[0]));d.appendChild(el("span","v",x[1]));inf.appendChild(d)});
     var cd=el("div","ci");cd.style.background=r.c[0];cd.appendChild(el("span","k","Catégorie"));cd.appendChild(el("span","v",r.cat));inf.appendChild(cd);
+    /* calories et budget des recettes rapides : référentiel Friscan (ING) + ../cookapli/budget.js */
+    if(r.ing&&typeof ING!=="undefined"&&typeof CookBudget!=="undefined"&&CookBudget.kcalFriscan){
+      var kf=CookBudget.kcalFriscan(r,ING);if(kf){var dk=el("div","ci kc");dk.title=AVERT_KCAL;dk.appendChild(el("span","k","Calories / pers."));dk.appendChild(el("span","v","≈ "+kf+" kcal"));inf.appendChild(dk)}
+      var bf=CookBudget.pret()?CookBudget.recetteFriscan(r,ING):null;if(bf){var db=el("div","ci bu bu"+bf.niv.n);db.title=CookBudget.AVERT;db.appendChild(el("span","k","Budget / pers."));db.appendChild(el("span","v",bf.niv.s+" · "+bf.niv.t));inf.appendChild(db)}}
     t.appendChild(inf);a.appendChild(t);g.appendChild(a)});
   box.appendChild(g)}
 function catList(){var list=[],n={};recipes.forEach(function(r){if(!r.cat)return;if(!n[r.cat]){n[r.cat]=0;list.push(r.cat)}n[r.cat]++});
