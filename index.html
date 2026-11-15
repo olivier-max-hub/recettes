@@ -222,11 +222,12 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 .kdet .note{font-weight:700}
 .rpill.kc small{color:#fff}
 /* ===== Budget estimé (cookapli/budget.js) ===== */
-:root{--budget:#7a4d00}
+:root{--budget:#8a5200;--bu1:#1c5d99;--bu2:#8a5200;--bu3:#a3261e} /* € bleu, €€ ambre, €€€ rouge brique (le vert est déjà pris par les calories) */
 .ci.bu{background:var(--budget);color:#fff}.ci.bu .k{color:#fff}
 .rpill.bu{background:var(--budget);color:#fff;grid-column:1/-1}.rpill.bu small{color:#fff}
 .rpill.bu .butot{display:block;margin-top:4px;font-size:1.05rem;font-weight:700;color:#fff}
 .kdet.budet summary{color:var(--budget)}
+.ci.bu1,.rpill.bu1{background:var(--bu1)}.ci.bu2,.rpill.bu2{background:var(--bu2)}.ci.bu3,.rpill.bu3{background:var(--bu3)}
 </style>
 </head>
 <body>
@@ -639,10 +640,10 @@ function infosCarte(r){
   var f=fiches[r.slug];if(!f||!f.m)return null;
   var L=[["Durée",duree(f.m.prep),"#bfe8ee"],["Cuisson",cuis(f.m.cuisson),"#ffd9c7"],["Personnes",vide(f.m.pers),"#cdeccb"],["Difficulté",vide(f.m.diff),"#fff1b8"]];
   var kc=kcalRecette(r);if(kc&&kc.pp)L.push(["Calories / pers.","≈ "+kc.pp+" kcal",null,"kc"]);
-  var bu=budgetRecette(r);if(bu&&bu.pp)L.push(["Budget / pers.",bu.niv.s+" · "+bu.niv.t,null,"bu"]);
+  var bu=budgetRecette(r);if(bu&&bu.pp)L.push(["Budget / pers.",bu.niv.s+" · "+bu.niv.t,null,"bu bu"+bu.niv.n]);
   var box=document.createElement("div");box.className="cinfo";
   L.forEach(function(x){if(!x[1])return;
-    var d=document.createElement("div");d.className="ci"+(x[3]?" "+x[3]:"");if(x[2])d.style.background=x[2];if(x[3])d.title=x[3]==="bu"?CookBudget.AVERT:AVERT_KCAL;
+    var d=document.createElement("div");d.className="ci"+(x[3]?" "+x[3]:"");if(x[2])d.style.background=x[2];if(x[3])d.title=x[3].indexOf("bu")===0?CookBudget.AVERT:AVERT_KCAL;
     var k=document.createElement("span");k.className="k";k.textContent=x[0];
     var v=document.createElement("span");v.className="v";
     if(x[0]==="Difficulté"){var c={Facile:"#1f7a43",Moyen:"#a85f00",Difficile:"#b3261e"}[x[1]];if(c)v.style.color=c}
@@ -898,7 +899,7 @@ function showRecipe(r,silent){
   var kc=kcalRecette(r);
   if(kc&&kc.pp){var kd=el("div","rpill kc");kd.title=AVERT_KCAL;kd.appendChild(el("small",null,"CALORIES / PERSONNE"));kd.appendChild(el("b",null,"≈ "+kc.pp+" kcal"));pills.appendChild(kd)}
   var bu=budgetRecette(r);
-  if(bu&&bu.pp){var bd=el("div","rpill bu");bd.title=CookBudget.AVERT;bd.appendChild(el("small",null,"BUDGET / PERSONNE"));bd.appendChild(el("b",null,bu.niv.s+" · "+bu.niv.t));var bt=el("span","butot");bt.setAttribute("aria-live","polite");bd.appendChild(bt);pills.appendChild(bd);
+  if(bu&&bu.pp){var bd=el("div","rpill bu bu"+bu.niv.n);bd.title=CookBudget.AVERT;bd.appendChild(el("small",null,"BUDGET / PERSONNE"));bd.appendChild(el("b",null,bu.niv.s+" · "+bu.niv.t));var bt=el("span","butot");bt.setAttribute("aria-live","polite");bd.appendChild(bt);pills.appendChild(bd);
     majBu=function(){var n=persN||bu.pers;bt.textContent="Pour "+n+" personne"+(n>1?"s":"")+" : "+CookBudget.fourchette(bu.pp*n)};majBu()}
   if(pills.children.length)box.appendChild(pills);
   if(kc)box.appendChild(kcalDetail(kc));
