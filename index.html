@@ -582,7 +582,7 @@ function loadFiches(){
 /* ---------- liste de courses Cookapli (même site : stockage partagé avec Friscan et Cookapli) ---------- */
 var ckIngP=null;
 function ckLoadING(cb){if(typeof ING!=="undefined")return cb();
-  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=16";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=17";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
   ckIngP.then(cb,function(){cb()})}
 function ckNorm(t){return " "+String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/œ/g,"oe").replace(/[^a-z0-9]+/g," ").trim()+" "}
 function ckGuess(t){if(typeof ING==="undefined")return null;var txt=ckNorm(t),best=null,bi=1e9,bl=0;
