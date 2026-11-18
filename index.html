@@ -241,6 +241,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 .fnote{background:#e8f6ec;border:1px solid #9fd8b0;border-radius:12px;padding:6px 10px;color:#14532d;font-weight:700;margin:0 0 10px}
 .fnote a{color:#14532d;font-weight:800}
 .fwarn{background:#fff1e6;border:1px solid #f0a868;border-radius:12px;padding:8px 12px;color:#7a2e00;font-weight:800;margin:8px 0}
+.fcrus{background:#fff6e0;border:1px solid #e9c44a;border-radius:12px;padding:8px 12px;color:#3a2a00;font-weight:800;margin:8px 0}
 </style>
 </head>
 <body>
@@ -262,7 +263,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 <div id="toast" role="status"></div>
 <script src="../cookapli/budget.js?v=3"></script>
 <script src="calories.js?v=2"></script>
-<script src="../cookapli/filtres.js?v=2"></script>
+<script src="../cookapli/filtres.js?v=3"></script>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
 var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
@@ -592,7 +593,7 @@ function loadFiches(){
 /* ---------- liste de courses Cookapli (même site : stockage partagé avec Friscan et Cookapli) ---------- */
 var ckIngP=null;
 function ckLoadING(cb){if(typeof ING!=="undefined")return cb();
-  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=19";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=20";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
   ckIngP.then(cb,function(){cb()})}
 function ckNorm(t){return " "+String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/œ/g,"oe").replace(/[^a-z0-9]+/g," ").trim()+" "}
 function ckGuess(t){if(typeof ING==="undefined")return null;var txt=ckNorm(t),best=null,bi=1e9,bl=0;
@@ -639,6 +640,7 @@ function showRecipe(r,silent){
     if(pick&&r.cat===courseCat(pick.c)){var pc=el("button","btn vbtn","✓ Choisir pour mon menu ("+course(pick.c)[1]+")");pc.type="button";pc.onclick=function(){hideRecipe();choisir(r)};b.appendChild(pc)}
     if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};var cw=el("div","chefrow");cw.appendChild(cb);b.appendChild(cw)}return b}
   box.appendChild(bar());
+  if(window.CookFiltres&&CookFiltres.oeufsCrus(r.name))box.appendChild(el("p","fcrus",CookFiltres.AVERT_CRUS));
   if(FA.length&&f){var rz=CookFiltres.raisons(CookFiltres.texteFiche(r.name,f),FA);if(rz.length)box.appendChild(el("p","fwarn","⚠️ Cette recette ne respecte pas tes préférences : "+CookFiltres.libelle(rz)+"."))}
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
