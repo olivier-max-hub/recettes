@@ -238,6 +238,9 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 .chefpop[hidden]{display:none}
 .chefpop::before{content:"";position:absolute;top:-7px;right:16px;width:14px;height:14px;background:#fff;transform:rotate(45deg)}
 .chefpop a{position:relative;display:flex;align-items:center;min-height:32px;color:#0f6b78;font-weight:700;font-size:1.15rem;text-decoration:underline;text-underline-offset:3px}
+.fnote{background:#e8f6ec;border:1px solid #9fd8b0;border-radius:12px;padding:6px 10px;color:#14532d;font-weight:700;margin:0 0 10px}
+.fnote a{color:#14532d;font-weight:800}
+.fwarn{background:#fff1e6;border:1px solid #f0a868;border-radius:12px;padding:8px 12px;color:#7a2e00;font-weight:800;margin:8px 0}
 </style>
 </head>
 <body>
@@ -259,6 +262,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 <div id="toast" role="status"></div>
 <script src="../cookapli/budget.js?v=3"></script>
 <script src="calories.js?v=1"></script>
+<script src="../cookapli/filtres.js?v=1"></script>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
 var CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQMnEn2pPvoE5A4ISSaLKhvtIB5kH5AnrJkHClyA79NkJQy2AUOuJSXCxmsK3lQ-DcfoITMzv_t22SV/pub?gid=943090944&single=true&output=csv";
@@ -397,6 +401,11 @@ function infosCarte(r){
     v.appendChild(document.createTextNode(x[1]));
     d.appendChild(k);d.appendChild(v);box.appendChild(d)});
   return box.children.length?box:null}
+/* préférences alimentaires choisies dans Cookapli (végétarien, sans gluten…) */
+var FA=window.CookFiltres?CookFiltres.lire():[];
+function okL(r){return!FA.length||CookFiltres.okTexte(CookFiltres.texteFiche(r.name,fiches[r.slug]),FA)}
+function okRap(r){return!FA.length||CookFiltres.ok(CookFiltres.texteFriscan(r,typeof ING!=="undefined"?ING:null),FA)}
+function noteFiltres(box){if(!FA.length)return;var p=el("p","fnote","🥗 Recettes "+CookFiltres.libelle(FA)+" · ");var a=el("a",null,"modifier");a.href="../cookapli/perso.html";p.appendChild(a);box.appendChild(p)}
 function renderList(){var box=$("list");box.textContent="";
   if(cat===CHRONO&&!pick){renderChrono(box);return}
   if(pick)box.appendChild(pickBar());
@@ -405,7 +414,8 @@ function renderList(){var box=$("list");box.textContent="";
   /* recherche : « bœuf » = « boeuf », « cœur » = « coeur » (les ligatures œ/æ sont dépliées des deux côtés) */
   var srch=function(t){return slug(String(t||"").replace(/œ/g,"oe").replace(/Œ/g,"Oe").replace(/æ/g,"ae").replace(/Æ/g,"Ae")).replace(/-/g," ")};
   var q=srch(query);
-  var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
+  if(!(isMobile()&&cat==="Tout"&&!query.trim()&&!pick))noteFiltres(box);
+  var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&okL(r)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
   if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent=isGaspi(cat)&&!query.trim()?"Cette rubrique accueillera bientôt des recettes et des idées anti-gaspi":"Aucune recette ne correspond.";box.appendChild(p);return}
   /* choix pour le menu Équilibre alimentaire : de la moins calorique à la plus calorique, recettes sans calories à la fin */
   if(pick){var kv=function(r){var k=kcalRecette(r);return k&&k.pp?k.pp:Infinity};items=items.slice().sort(function(a,b){return kv(a)-kv(b)});
@@ -629,6 +639,7 @@ function showRecipe(r,silent){
     if(pick&&r.cat===courseCat(pick.c)){var pc=el("button","btn vbtn","✓ Choisir pour mon menu ("+course(pick.c)[1]+")");pc.type="button";pc.onclick=function(){hideRecipe();choisir(r)};b.appendChild(pc)}
     if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};var cw=el("div","chefrow");cw.appendChild(cb);b.appendChild(cw)}return b}
   box.appendChild(bar());
+  if(FA.length&&f){var rz=CookFiltres.raisons(CookFiltres.texteFiche(r.name,f),FA);if(rz.length)box.appendChild(el("p","fwarn","⚠️ Cette recette ne respecte pas tes préférences : "+CookFiltres.libelle(rz)+"."))}
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
   tx.appendChild(el("h2",null,r.name));
@@ -757,8 +768,9 @@ function livreChrono(r){var t=livreMin(r);return t!=null&&t<=30&&!/preparation/.
 function renderChrono(box){
   if(isMobile())box.appendChild(backBar());
   var q=slug(query).replace(/-/g," "),ok=function(t){return!q||slug(t).replace(/-/g," ").indexOf(q)>=0};
-  var items=(rapides||[]).filter(function(r){return ok(r.n+" "+r.cat)}).map(function(r){return{f:r,min:r.min,n:r.n}})
-    .concat(recipes.filter(function(r){return livreChrono(r)&&ok(r.name+" "+r.cat+" "+r.type)}).map(function(r){return{l:r,min:livreMin(r),n:r.name}}))
+  noteFiltres(box);
+  var items=(rapides||[]).filter(function(r){return okRap(r)&&ok(r.n+" "+r.cat)}).map(function(r){return{f:r,min:r.min,n:r.n}})
+    .concat(recipes.filter(function(r){return livreChrono(r)&&okL(r)&&ok(r.name+" "+r.cat+" "+r.type)}).map(function(r){return{l:r,min:livreMin(r),n:r.name}}))
     .sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")});
   box.appendChild(el("p","picksort","Des recettes prêtes en 30 minutes au maximum, préparation et cuisson comprises : celles du Livre et les recettes rapides de Friscan, qui s’ouvrent dans Friscan."));
   if(!rapides&&!items.length){box.appendChild(el("p","msg","Chargement des recettes rapides…"));return}
