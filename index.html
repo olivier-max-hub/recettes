@@ -261,7 +261,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
 <script src="../cookapli/budget.js?v=3"></script>
-<script src="calories.js?v=1"></script>
+<script src="calories.js?v=2"></script>
 <script src="../cookapli/filtres.js?v=2"></script>
 <script>
 /* Colle ici le lien « Publier sur le Web » (format CSV) de ta feuille Google Sheets. */
@@ -318,14 +318,14 @@ function budgetRecette(r){if(typeof CookBudget==="undefined"||!CookBudget.pret()
   (f.ing||[]).forEach(function(it){var t=net(it.t,"");if(!t)return;
     if(it.l&&(/:\s*$/.test(t)||!/^\s*(?:\d|[½¼¾⅓⅔]|une?\s|environ\s)/i.test(t)))return;
     var a=kcLigne(t),id=ckGuess(t),e=id?CookBudget.prixKg(id):null,x={t:t,g:a.g,e:0,st:a.st};
-    if(a.st==="neg")ok++;else if(a.st==="ok"&&e!=null){x.e=a.g/1000*e;tot+=x.e;ok++}else{if(a.st==="ok")x.st="prix";ko++}
+    if(a.st==="fac"){}else if(a.st==="neg")ok++;else if(a.st==="ok"&&e!=null){x.e=a.g/1000*e;tot+=x.e;ok++}else{if(a.st==="ok")x.st="prix";ko++}
     L.push(x)});
   var pers=persNb(f),v=L.length?{tot:tot,pers:pers,pp:pers&&tot>0&&ko*3<=ok?tot/pers:0,L:L,ko:ko}:null;
   if(v&&v.pp)v.niv=CookBudget.niveau(v.pp);BU[r.slug]={f:f,v:v};return v}
 function budgetDetail(bu){var d=el("details","kdet budet"),sm=el("summary",null,bu.pp?"Comment le budget est estimé":"Budget : estimation impossible pour cette recette");d.appendChild(sm);
   d.appendChild(el("p",null,CookBudget.AVERT));
   if(bu.pp)d.appendChild(el("p",null,"Coût estimé de la recette pour "+bu.pers+(bu.pers>1?" personnes":" personne")+" : "+CookBudget.fourchette(bu.tot)+". Repères par personne : € = moins de 1,50 €, €€ = de 1,50 € à 3 €, €€€ = plus de 3 €."));
-  var tb=el("table"),lab={neg:"quantité négligeable",nq:"quantité non précisée",inconnu:"ingrédient non reconnu",prix:"prix non disponible"};
+  var tb=el("table"),lab={neg:"quantité négligeable",nq:"quantité non précisée",inconnu:"ingrédient non reconnu",prix:"prix non disponible",fac:"facultatif, non compté"};
   bu.L.forEach(function(a){var tr=el("tr");tr.appendChild(el("td",null,a.t));
     if(a.st==="ok"){tr.appendChild(el("td","n","≈ "+a.g+" g"));tr.appendChild(el("td","n","≈ "+CookBudget.euros(a.e)))}else{var x=el("td","n x",lab[a.st]||"—");x.colSpan=2;tr.appendChild(x)}tb.appendChild(tr)});
   d.appendChild(tb);
@@ -692,7 +692,7 @@ function kcalDetail(kc){var d=el("details","kdet"),sm=el("summary",null,kc.pp?"C
   d.appendChild(el("p","note",AVERT_KCAL+" Ce n’est pas une donnée médicale."));
   if(kc.pp)d.appendChild(el("p",null,"Total de la recette ≈ "+Math.round(kc.tot/10)*10+" kcal, divisé par "+kc.pers+(kc.pers>1?" personnes":" personne")+" ≈ "+kc.pp+" kcal par personne."));
   else d.appendChild(el("p",null,!kc.pers?"Le nombre de personnes n’est pas indiqué sur la fiche.":kc.tot>0?"Trop d’ingrédients n’ont pas de quantité précise sur la fiche pour donner une estimation fiable.":"Aucun ingrédient n’a pu être chiffré."));
-  var tb=el("table"),lab={neg:"négligeable",nq:"quantité non précisée",inconnu:"non reconnu"};
+  var tb=el("table"),lab={neg:"négligeable",nq:"quantité non précisée",inconnu:"non reconnu",fac:"facultatif, non compté"};
   kc.L.forEach(function(a){var tr=el("tr");tr.appendChild(el("td",null,a.t));
     if(a.st==="ok"){tr.appendChild(el("td","n","≈ "+a.g+" g"));tr.appendChild(el("td","n",a.k+" kcal"))}else{var x=el("td","n x",lab[a.st]);x.colSpan=2;tr.appendChild(x)}tb.appendChild(tr)});
   d.appendChild(tb);

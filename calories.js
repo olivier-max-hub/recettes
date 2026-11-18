@@ -236,6 +236,8 @@ function kcNum(m){var v=parseFloat(m[1].replace(",","."));if(m[2])v+=(+m[2])/(+m
 /* analyse d'une ligne d'ingrédient : {t, g (grammes), k (kcal), st : ok | neg (négligeable) | nq (quantité non précisée) | inconnu} */
 function kcLigne(t){
   var s=kcNorm(t),o={t:t,g:0,k:0,st:"inconnu"};
+  /* ingrédient facultatif : jamais compté (calories ni budget), c'est à l'utilisateur de l'ajouter s'il le met */
+  if(/facultati|falcultati|optionnel|pour servir/.test(s)){o.st="fac";return o}
   var paren=(s.match(/\(([^)]*)\)/g)||[]).join(" "),s2=s.replace(/\([^)]*\)/g," ").replace(/\s+/g," ").trim();
   var QR=/(\d+(?:[.,]\d+)?)(?:\s+(\d+)\/(\d+)|\/(\d+))?(?:\s*(?:a|-|–|ou)\s*(\d+(?:[.,]\d+)?)(?![\d\/]))?/g,m,q=null,before="",after=s2;
   while((m=QR.exec(s2))){var nx=s2.slice(m.index+m[0].length);if(/^\s*%/.test(nx)||/[a-z]$/.test(s2.slice(0,m.index)))continue;q=kcNum(m);before=s2.slice(0,m.index);after=nx;break}
@@ -282,6 +284,6 @@ var CookCalc=(function(){
     L.forEach(function(t){var a=kcLigne(t);if(a.st==="ok"){tot+=a.k;ok++}else if(a.st==="inconnu")ko++;else if(a.st==="nq")nq++});
     var pers=persNb(f);return pers&&tot>0&&tot/pers<=3000&&ko+nq<=ok?Math.max(10,Math.round(tot/pers/10)*10):0}
   function budget(f,guess){if(typeof CookBudget==="undefined"||!CookBudget.pret()||!guess)return null;var L=lignes(f);if(!L.length)return null;var tot=0,ok=0,ko=0;
-    L.forEach(function(t){var a=kcLigne(t),id=guess(t),e=id?CookBudget.prixKg(id):null;if(a.st==="neg")ok++;else if(a.st==="ok"&&e!=null){tot+=a.g/1000*e;ok++}else ko++});
+    L.forEach(function(t){var a=kcLigne(t),id=guess(t),e=id?CookBudget.prixKg(id):null;if(a.st==="fac")return;if(a.st==="neg")ok++;else if(a.st==="ok"&&e!=null){tot+=a.g/1000*e;ok++}else ko++});
     var pers=persNb(f);if(!pers||tot<=0||ko*3>ok)return null;var pp=tot/pers;return{pp:pp,niv:CookBudget.niveau(pp)}}
   return{kcal:kcal,budget:budget}})();
