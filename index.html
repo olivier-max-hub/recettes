@@ -157,6 +157,7 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 .veg{position:absolute;z-index:2;top:26px;right:8px;transform:rotate(28deg);background:var(--vert);color:#fff;font:700 .7rem/1 "Economica","Arial Narrow",Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:7px;border:1.5px solid rgba(255,255,255,.9);box-shadow:0 2px 6px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap}
 .vegrow{display:flex;justify-content:center;padding:6px 8px;background:#fff}
 .vegtag{background:var(--vert);color:#fff;font:700 .72rem/1 "Economica","Arial Narrow",Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:5px 16px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.veg.vegan,.vegtag.vegan{background:#4d7c0f!important}
 .veg.big{font-size:1.05rem;padding:6px 18px;top:38px;right:14px;border-radius:9px;border-width:2px}
 .rhero{position:relative;overflow:hidden}
 /* pastille « IA? » sur la photo : un appui affiche d’où vient l’image */
@@ -288,7 +289,7 @@ function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;
 var ICONS=[[/burger/,"🍔"],[/cake|gâteau|tarte|crumble|brownie|cookie|mousse|flan sucr|dessert/,"🍰"],[/salade|coleslaw|crudit/,"🥗"],[/houmous|tahini|caviar|tartinade|rillette|crème de|velouté|soupe/,"🥣"],[/poisson|sardine|saumon|thon|crevette/,"🐟"],[/poulet|volaille|canard|dinde/,"🍗"],[/boeuf|bœuf|porc|veau|agneau|steak|bacon|lardon|foie|pâté|viande/,"🥩"],[/pâtes|lasagne|nouille|riz|risotto/,"🍝"],[/cracker|flûte|feuillet|pain|brioche/,"🥖"],[/fromage|feta|chèvre|roquefort/,"🧀"],[/butternut|courge|légume|aubergine|radis|endive|lentille/,"🥕"]];
 function icon(r){var s=(r.name+" "+r.cat+" "+r.type).toLowerCase();for(var i=0;i<ICONS.length;i++)if(ICONS[i][0].test(s))return ICONS[i][1];return r.cat==="Apéritif"?"🥂":"🍽️"}
 function thumb(r){var d=document.createElement("div");d.className="thumb";var h=hue(r.cat||r.name);d.style.background="linear-gradient(135deg,hsl("+h+" 45% 82%),hsl("+((h+40)%360)+" 50% 70%))";d.textContent=icon(r);d.setAttribute("aria-hidden","true");
-  var u=imgUrl(r.img);if(u){var i=document.createElement("img");i.alt="";i.loading="lazy";i.referrerPolicy="no-referrer";i.onerror=function(){i.remove()};i.src=u;d.appendChild(i);if(r.ia){var b=document.createElement("span");b.className="iamini";b.textContent="IA";b.title=iaTxt(r.ia);d.appendChild(b)}}
+  var u=imgUrl(r.img);if(u){var i=document.createElement("img");i.alt="";i.loading="lazy";i.referrerPolicy="no-referrer";i.onerror=function(){i.remove()};i.src=u;d.appendChild(i);if(r.ia){var b=document.createElement("span");b.className="iamini";b.textContent="image IA?";b.title=iaTxt(r.ia);d.appendChild(b)}}
   return d}
 function imgUrl(u){if(!u)return"";var m=u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);return m?"https://drive.google.com/thumbnail?id="+m[1]+"&sz=w800":u}
 function toast(m){var t=$("toast");t.textContent=m;t.classList.toggle("warn",/impossible|refus|indisponible|échou|erreur|n’a pas pu|n'a pas pu/i.test(m));t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2400)}
@@ -302,7 +303,7 @@ function iaTxt(k){return k==="rl"?IA_RL:"Photo d’illustration créée par IA, 
 function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;var type=(row[3]||"").trim();
   /* « Plat », « Plat unique » et « Plat unique Végétarien » forment une seule rubrique « Plat » ; la mention végétarien est gardée à part */
   var veg=/vegetarien|vegan|(^|-)vege(-|$)/.test(slug(c)+"-"+slug(type)+"-"+slug(name));if(/^plat(-|$)/.test(slug(c)))c="Plat";
-  out.push({cat:c,name:name,type:type,region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:imgCol(row),ia:iaCol(row),veg:veg,slug:slug(name)})});return out}
+  out.push({cat:c,name:name,type:type,region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:imgCol(row),ia:iaCol(row),veg:veg,vegan:/(^|-)vegan(-|$)/.test(slug(type)+"-"+slug(name)),slug:slug(name)})});return out}
 
 /* ================= Estimation des calories (outil indicatif, sans aucune valeur médicale) =================
    Chaque ligne d'ingrédient est lue (quantité + unité + aliment), convertie en grammes, puis multipliée par une valeur
@@ -363,7 +364,7 @@ function renderEq(){var box=$("eqp");box.textContent="";
   var mn=el("div","eqmenu"),sum=0,nb=0,sans=0;
   COURSES.forEach(function(C,i){var row=el("div","eqrow"),tile=el("a","eqt");tile.href="#menu-"+C[0];var p=PAL[[0,4,1,5][i]];tile.style.background="linear-gradient(135deg,"+TR(p[0])+","+TR(p[1])+")";
     var ch=menu[C[0]],r=ch&&recipes.filter(function(x){return x.slug===ch.slug})[0],tx=el("span");
-    if(ch){tx.appendChild(el("span","lab",C[1]));if(r&&r.veg)tx.appendChild(el("span","vegtag eqveg","Végétarien"));tx.appendChild(el("b",null,r?r.name:ch.name));
+    if(ch){tx.appendChild(el("span","lab",C[1]));if(r&&r.veg)tx.appendChild(el("span","vegtag eqveg"+(r.vegan?" vegan":""),r.vegan?"Vegan":"Végétarien"));tx.appendChild(el("b",null,r?r.name:ch.name));
       var kc=r&&kcalRecette(r);nb++;
       if(kc&&kc.pp){sum+=kc.pp;tx.appendChild(el("span","kc","≈ "+kc.pp+" kcal / pers."))}else{sans++;tx.appendChild(el("small",null,"Calories non disponibles pour cette recette"))}
       tx.appendChild(el("small","chg","Toucher pour changer"))}
@@ -389,7 +390,7 @@ function pickUpdate(){var bar=$("pickgo");if(!pick){bar.textContent="";return}
   if(r){var v=el("button","btn alt","Voir la recette");v.type="button";v.onclick=function(){viaList=true;location.hash=r.slug};bar.appendChild(v)}
   Array.prototype.forEach.call(document.querySelectorAll("#list .card"),function(c){c.classList.toggle("picked",c.dataset.slug===pick.sel);c.setAttribute("aria-pressed",c.dataset.slug===pick.sel)})}
 function choisir(r){menu[pick.c]={slug:r.slug,name:r.name};saveMenu();track("menu",r.name);pick=null;document.body.classList.remove("picking");pickUpdate();location.replace("#equilibre");toast("C’est noté : « "+r.name+" » est dans ton menu")}
-function vegStamp(big){var s=el("span","veg"+(big?" big":""),"Végétarien");return s}
+function vegStamp(big,vegan){var s=el("span","veg"+(big?" big":"")+(vegan?" vegan":""),vegan?"Vegan":"Végétarien");return s}
 
 function renderChips(){var names=catList().map(function(c){return c.name}),cats=["Tout"].concat(names);if(cats.indexOf(cat)<0&&cat!==CHRONO)cat="Tout";var box=$("chips");box.textContent="";
   function chip(c){var b=document.createElement("button");b.className="chip"+(isGaspi(c)?" chipgaspi":"");b.textContent=(isGaspi(c)?"♻️ ":"")+c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)}
@@ -415,7 +416,7 @@ function infosCarte(r){
   return box.children.length?box:null}
 /* préférences alimentaires choisies dans Cookapli (végétarien, sans gluten…) */
 var FA=window.CookFiltres?CookFiltres.lire():[];
-function okL(r){return!FA.length||CookFiltres.okTexte(CookFiltres.texteFiche(r.name,fiches[r.slug]),FA)}
+function okL(r){return!FA.length||CookFiltres.okTexte(CookFiltres.texteFiche(r.name,fiches[r.slug],r.type),FA)}
 function okRap(r){return!FA.length||CookFiltres.ok(CookFiltres.texteFriscan(r,typeof ING!=="undefined"?ING:null),FA)}
 function noteFiltres(box){if(!FA.length)return;var p=el("p","fnote","🥗 Recettes "+CookFiltres.libelle(FA)+" · ");var a=el("a",null,"modifier");a.href="../cookapli/perso.html";p.appendChild(a);box.appendChild(p)}
 function renderList(){var box=$("list");box.textContent="";
@@ -436,7 +437,7 @@ function renderList(){var box=$("list");box.textContent="";
   order.forEach(function(c){
     var g=document.createElement("div");g.className="grid";
     groups[c].forEach(function(r){var b=document.createElement("button");b.className="card";b.style.borderTop="4px solid hsl("+hue(r.cat||r.name)+" 65% 55%)";
-      if(r.veg){var vr=el("div","vegrow");vr.appendChild(el("span","vegtag","Végétarien"));b.appendChild(vr)}
+      if(r.veg){var vr=el("div","vegrow");vr.appendChild(el("span","vegtag"+(r.vegan?" vegan":""),r.vegan?"Vegan":"Végétarien"));b.appendChild(vr)}
       b.appendChild(thumb(r));
       var t=document.createElement("div");t.className="t";var n=document.createElement("b");n.textContent=r.name;var inf=infosCarte(r);t.appendChild(n);if(inf)t.appendChild(inf);else{var s=document.createElement("small");s.textContent=[r.type,r.region].filter(Boolean).join(", ");t.appendChild(s)}b.appendChild(t);
       b.dataset.slug=r.slug;
@@ -652,14 +653,14 @@ function showRecipe(r,silent){
     if(f&&(f.steps||[]).length){var cb=el("button","btn chefbtn","▶ Voir la recette avec un chef");cb.type="button";cb.onclick=function(){chefOuvrir(r,f,0)};var cw=el("div","chefrow");cw.appendChild(cb);b.appendChild(cw)}return b}
   box.appendChild(bar());
   if(window.CookFiltres&&CookFiltres.oeufsCrus(r.name))box.appendChild(el("p","fcrus",CookFiltres.AVERT_CRUS));
-  if(FA.length&&f){var rz=CookFiltres.raisons(CookFiltres.texteFiche(r.name,f),FA);if(rz.length)box.appendChild(el("p","fwarn","⚠️ Cette recette ne respecte pas tes préférences : "+CookFiltres.libelle(rz)+"."))}
+  if(FA.length&&f){var rz=CookFiltres.raisons(CookFiltres.texteFiche(r.name,f,r.type),FA);if(rz.length)box.appendChild(el("p","fwarn","⚠️ Cette recette ne respecte pas tes préférences : "+CookFiltres.libelle(rz)+"."))}
   if(f&&f.m&&r.cat)box.appendChild(el("div","rband",r.cat));
   var img=imgUrl(r.img),hero=el("div","rhero"+(img?"":" solo")),tx=el("div");
   tx.appendChild(el("h2",null,r.name));
   if(f&&f.r){var rr=net(f.r,"");if(rr)tx.appendChild(el("p","rend",rr))}
   hero.appendChild(tx);
-  var vs=r.veg?vegStamp(true):null;
-  if(img){var iw=el("div","rimg"),im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){iw.remove();hero.classList.add("solo");if(vs)hero.appendChild(vs)};iw.appendChild(im);if(vs)iw.appendChild(vs);if(r.ia){var qb=el("button","iaq","IA?");qb.type="button";qb.setAttribute("aria-expanded","false");var bl=el("p","iabulle",iaTxt(r.ia));bl.hidden=true;qb.onclick=function(e){e.stopPropagation();bl.hidden=!bl.hidden;qb.setAttribute("aria-expanded",!bl.hidden)};iw.appendChild(qb);iw.appendChild(bl)}hero.appendChild(iw)}
+  var vs=r.veg?vegStamp(true,r.vegan):null;
+  if(img){var iw=el("div","rimg"),im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){iw.remove();hero.classList.add("solo");if(vs)hero.appendChild(vs)};iw.appendChild(im);if(vs)iw.appendChild(vs);if(r.ia){var qb=el("button","iaq","image IA?");qb.type="button";qb.setAttribute("aria-expanded","false");var bl=el("p","iabulle",iaTxt(r.ia));bl.hidden=true;qb.onclick=function(e){e.stopPropagation();bl.hidden=!bl.hidden;qb.setAttribute("aria-expanded",!bl.hidden)};iw.appendChild(qb);iw.appendChild(bl)}hero.appendChild(iw)}
   else if(vs)hero.appendChild(vs);
   box.appendChild(hero);
   var pills=el("div","rpills");
@@ -792,14 +793,14 @@ function renderChrono(box){
   var g=el("div","grid");
   items.forEach(function(it){
     if(it.l){var r=it.l,b=el("button","card");b.style.borderTop="4px solid "+PAL_CHRONO[1];
-      if(r.veg){var v2=el("div","vegrow");v2.appendChild(el("span","vegtag","Végétarien"));b.appendChild(v2)}
+      if(r.veg){var v2=el("div","vegrow");v2.appendChild(el("span","vegtag"+(r.vegan?" vegan":""),r.vegan?"Vegan":"Végétarien"));b.appendChild(v2)}
       b.appendChild(thumb(r));var t2=el("div","t");t2.appendChild(el("b",null,r.name));var inf2=infosCarte(r);if(inf2)t2.appendChild(inf2);b.appendChild(t2);
       b.dataset.slug=r.slug;b.onclick=function(){viaList=true;location.hash=r.slug};g.appendChild(b);return}
     var r=it.f,a=el("a","card");a.href=FRISCAN+"#r-"+r.id;a.style.borderTop="4px solid "+r.c[1];
     if(/vegetarien/.test(slug(r.cat))){var vr=el("div","vegrow");vr.appendChild(el("span","vegtag","Végétarien"));a.appendChild(vr)}
     var th=el("div","thumb");th.style.background="linear-gradient(135deg,"+r.c[0]+","+r.c[1]+")";th.textContent=r.e;th.setAttribute("aria-hidden","true");
     if(r.img){var im=document.createElement("img");im.alt="";im.loading="lazy";im.src=FRISCAN+r.img;im.onerror=function(){im.remove()};th.appendChild(im)}
-    if(r.img&&r.ia){var ia=el("span","iamini","IA");ia.title=IA_TXT;th.appendChild(ia)}
+    if(r.img&&r.ia){var ia=el("span","iamini","image IA?");ia.title=IA_TXT;th.appendChild(ia)}
     a.appendChild(th);var t=el("div","t");t.appendChild(el("b",null,r.n));
     var inf=el("div","cinfo");[["Durée",r.min+" min","#bfe8ee"],["Personnes",String(r.pers),"#cdeccb"]].forEach(function(x){var d=el("div","ci");d.style.background=x[2];d.appendChild(el("span","k",x[0]));d.appendChild(el("span","v",x[1]));inf.appendChild(d)});
     var cd=el("div","ci");cd.style.background=r.c[0];cd.appendChild(el("span","k","Catégorie"));cd.appendChild(el("span","v",r.cat));inf.appendChild(cd);

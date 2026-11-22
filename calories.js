@@ -18,6 +18,10 @@ var ALIM=[
  A(/(?<!a l')\bhuile/,900,{d:.92,cs:13,u:{filet:5,trait:5}}),
  A(/petits? beurres?/,450,{p:8,u:{paquet:200}}),
  A(/\bbeurre/,745,{cs:15,u:{noix:10,noisette:5,plaquette:250}}),
+ A(/tofu soyeux/,55,{cs:15}),
+ A(/\btofu|tempeh/,130,{p:200}),
+ A(/\bmiso\b/,200,{cs:18,cc:6}),
+ A(/\balgues?\b|wakame|\bnori\b|kombu/,200,{cs:3,u:{feuille:3}}),
  A(/margarine/,700,{cs:15,u:{noix:10,noisette:5}}),
  A(/saindoux|graisse de canard|graisse d'oie/,900,{cs:13}),
  A(/chocolat blanc/,560,{u:{tablette:100,carre:5}}),
@@ -213,7 +217,7 @@ var ALIM=[
  A(/nuoc|sauce (?:de )?poisson/,40,{cs:16}),
  A(/sauce (?:barbecue|bbq|worcestershire|piquante)|harissa|tabasco|worcestershire/,100,{cs:16}),
  A(/\bcafe\b/,2,{d:1}),
- A(/\b(?:sel|poivre|eau|glacons?|bicarbonate|epices?|cumin|curcuma|paprika|curry|cannelle|muscade|piments?|cayenne|herbes?|thym|romarin|laurier|origan|basilic|persil|coriandre|ciboulette|menthe|aneth|estragon|sauge|cerfeuil|safran|girofle|cardamome|badiane|anis|ras el hanout|colorant|aromes?|vanille|zestes?|fleur d'oranger|levure chimique|poudre a lever|garam|tandoori|sumac|zaatar|fenugrec|bouquet garni|citronnelle|graines de moutarde|chili|chicoree)\b/,0,{neg:1})
+ A(/\b(?:sel|poivre|eau|glacons?|bicarbonate|epices?|ras.el.hanout|cumin|curcuma|paprika|curry|cannelle|muscade|piments?|cayenne|herbes?|thym|romarin|laurier|origan|basilic|persil|coriandre|ciboulette|menthe|aneth|estragon|sauge|cerfeuil|safran|girofle|cardamome|badiane|anis|ras el hanout|colorant|aromes?|vanille|zestes?|fleur d'oranger|levure chimique|poudre a lever|garam|tandoori|sumac|zaatar|fenugrec|bouquet garni|citronnelle|graines de moutarde|chili|chicoree)\b/,0,{neg:1})
 ];
 var KC_ML={ml:1,cl:10,dl:100,l:1000,verre:200,tasse:250,bol:300,louche:100,trait:5,brique:200};
 var KC_GR={kg:1000,g:1,mg:.001};
@@ -229,6 +233,7 @@ function kcNorm(t){
   s=s.replace(/\b(?:cuil+e?r?e?s?|cuil+)\.?\s*(?:a|de)?\s*soupe\b\.?/g," cs ").replace(/\b(?:cuil+e?r?e?s?|cuil+)\.?\s*(?:a|de)?\s*(?:cafe|the)\b\.?/g," cc ")
     .replace(/\bc\.?\s?a\.?\s?soupe\b/g," cs ").replace(/\bc\.?\s?a\.?\s?(?:cafe|the)\b/g," cc ").replace(/\bc\.?\s?a\.?\s?s\b\.?/g," cs ").replace(/\bc\.?\s?a\.?\s?c\b\.?/g," cc ").replace(/\bc\.\s?s\.?(?![a-z])/g," cs ").replace(/\bc\.\s?c\.?(?![a-z])/g," cc ")
     .replace(/\b(?:cas|tbsp|cuil+eres?|cuil+)\b\.?/g," cs ").replace(/\b(?:cac|tsp)\b\.?/g," cc ");
+  s=s.replace(/(\d)\s+(?:grande?s?|petite?s?|grosse?s?|belles?|bonnes?)\s+(?=(?:tranches?|gousses?|poignees?|cs|cc|boites?|bottes?|branches?|feuilles?|tetes?|rondelles?|boules?|morceaux?|louches?|pincees?)\b)/g,"$1 "); /* « 4 grandes tranches » = 4 tranches */
   return s.replace(/\s+/g," ").trim()}
 function kcFood(x){if(!x)return null;for(var i=0;i<ALIM.length;i++)if(ALIM[i].re.test(x))return ALIM[i];return null}
 function kcUnit(u){return u.replace(/^bocaux$/,"bocal").replace(/^(rouleau|morceau)x$/,"$1").replace(/^conserves?$/,"boite").replace(/s$/,"")}
