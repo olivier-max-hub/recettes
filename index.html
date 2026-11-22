@@ -776,7 +776,7 @@ function renderChrono(box){
   var items=(rapides||[]).filter(function(r){return okRap(r)&&ok(r.n+" "+r.cat)}).map(function(r){return{f:r,min:r.min,n:r.n}})
     .concat(recipes.filter(function(r){return livreChrono(r)&&okL(r)&&ok(r.name+" "+r.cat+" "+r.type)}).map(function(r){return{l:r,min:livreMin(r),n:r.name}}))
     .sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")});
-  box.appendChild(el("p","picksort","Des recettes prêtes en 30 minutes au maximum, préparation et cuisson comprises : celles du Livre et les recettes rapides de Friscan, qui s’ouvrent dans Friscan."));
+  box.appendChild(el("p","picksort","Des recettes prêtes en 30 minutes au maximum, préparation et cuisson comprises : celles du Livre et les recettes rapides de Cookapli, qui s’ouvrent dans « Mes réserves »."));
   if(!rapides&&!items.length){box.appendChild(el("p","msg","Chargement des recettes rapides…"));return}
   if(!items.length){box.appendChild(el("p","msg","Aucune recette ne correspond."));return}
   var g=el("div","grid");
