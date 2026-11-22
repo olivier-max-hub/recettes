@@ -159,6 +159,11 @@ body.view-recipe main,body.view-recipe #q,body.view-recipe #chips,body.view-reci
 .vegtag{background:var(--vert);color:#fff;font:700 .72rem/1 "Economica","Arial Narrow",Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:5px 16px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .veg.big{font-size:1.05rem;padding:6px 18px;top:38px;right:14px;border-radius:9px;border-width:2px}
 .rhero{position:relative;overflow:hidden}
+/* pastille « IA? » sur la photo : un appui affiche d’où vient l’image */
+.rimg{position:relative}
+.rimg .iaq{position:absolute;top:10px;right:10px;z-index:3;border:0;border-radius:99px;background:rgba(0,0,0,.62);color:#fff;font:inherit;font-weight:700;font-size:1rem;padding:4px 12px;cursor:pointer;line-height:1.2}
+.rimg .iabulle{position:absolute;top:46px;right:10px;z-index:3;width:min(300px,calc(100% - 20px));margin:0;background:#fff;color:#000;font-weight:700;border-radius:14px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.3);font-size:1rem;line-height:1.3;text-align:left}
+.rimg .iabulle[hidden]{display:none}
 .rimg{position:relative;overflow:hidden;border-radius:20px}
 @media (max-width:699px){.rhero .rimg{order:-1}}
 .card{position:relative}
@@ -283,16 +288,21 @@ function hue(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%360;
 var ICONS=[[/burger/,"🍔"],[/cake|gâteau|tarte|crumble|brownie|cookie|mousse|flan sucr|dessert/,"🍰"],[/salade|coleslaw|crudit/,"🥗"],[/houmous|tahini|caviar|tartinade|rillette|crème de|velouté|soupe/,"🥣"],[/poisson|sardine|saumon|thon|crevette/,"🐟"],[/poulet|volaille|canard|dinde/,"🍗"],[/boeuf|bœuf|porc|veau|agneau|steak|bacon|lardon|foie|pâté|viande/,"🥩"],[/pâtes|lasagne|nouille|riz|risotto/,"🍝"],[/cracker|flûte|feuillet|pain|brioche/,"🥖"],[/fromage|feta|chèvre|roquefort/,"🧀"],[/butternut|courge|légume|aubergine|radis|endive|lentille/,"🥕"]];
 function icon(r){var s=(r.name+" "+r.cat+" "+r.type).toLowerCase();for(var i=0;i<ICONS.length;i++)if(ICONS[i][0].test(s))return ICONS[i][1];return r.cat==="Apéritif"?"🥂":"🍽️"}
 function thumb(r){var d=document.createElement("div");d.className="thumb";var h=hue(r.cat||r.name);d.style.background="linear-gradient(135deg,hsl("+h+" 45% 82%),hsl("+((h+40)%360)+" 50% 70%))";d.textContent=icon(r);d.setAttribute("aria-hidden","true");
-  var u=imgUrl(r.img);if(u){var i=document.createElement("img");i.alt="";i.loading="lazy";i.referrerPolicy="no-referrer";i.onerror=function(){i.remove()};i.src=u;d.appendChild(i)}
+  var u=imgUrl(r.img);if(u){var i=document.createElement("img");i.alt="";i.loading="lazy";i.referrerPolicy="no-referrer";i.onerror=function(){i.remove()};i.src=u;d.appendChild(i);if(r.ia){var b=document.createElement("span");b.className="iamini";b.textContent="IA";b.title=iaTxt(r.ia);d.appendChild(b)}}
   return d}
 function imgUrl(u){if(!u)return"";var m=u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);return m?"https://drive.google.com/thumbnail?id="+m[1]+"&sz=w800":u}
 function toast(m){var t=$("toast");t.textContent=m;t.classList.toggle("warn",/impossible|refus|indisponible|échou|erreur|n’a pas pu|n'a pas pu/i.test(m));t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},2400)}
 
 function csv(t){var rows=[],r=[],f="",q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==","){r.push(f);f=""}else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";rows.push(r);r=[]}else f+=c}if(f!==""||r.length){r.push(f);rows.push(r)}return rows}
+/* la photo est la cellule « images/… .jpg » (sa colonne peut bouger) ; la mention IA est « IA » ou « RL / IA » */
+function imgCol(r){for(var i=5;i<r.length;i++)if(/\.(jpe?g|png|webp|gif)\s*$/i.test(r[i]||""))return r[i].trim();return""}
+function iaCol(r){for(var i=5;i<r.length;i++){var x=(r[i]||"").trim();if(/^(rl\s*\/\s*ia|ia)$/i.test(x))return /rl/i.test(x)?"rl":"ia"}return""}
+var IA_RL="L’image du plat est réelle, l’environnement est créé par l’IA.";
+function iaTxt(k){return k==="rl"?IA_RL:"Photo d’illustration créée par IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle."}
 function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;var type=(row[3]||"").trim();
   /* « Plat », « Plat unique » et « Plat unique Végétarien » forment une seule rubrique « Plat » ; la mention végétarien est gardée à part */
   var veg=/vegetarien|vegan|(^|-)vege(-|$)/.test(slug(c)+"-"+slug(type)+"-"+slug(name));if(/^plat(-|$)/.test(slug(c)))c="Plat";
-  out.push({cat:c,name:name,type:type,region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:(row[6]||"").trim(),veg:veg,slug:slug(name)})});return out}
+  out.push({cat:c,name:name,type:type,region:(row[4]||"").trim(),link:(row[5]||"").trim(),img:imgCol(row),ia:iaCol(row),veg:veg,slug:slug(name)})});return out}
 
 /* ================= Estimation des calories (outil indicatif, sans aucune valeur médicale) =================
    Chaque ligne d'ingrédient est lue (quantité + unité + aliment), convertie en grammes, puis multipliée par une valeur
@@ -649,7 +659,7 @@ function showRecipe(r,silent){
   if(f&&f.r){var rr=net(f.r,"");if(rr)tx.appendChild(el("p","rend",rr))}
   hero.appendChild(tx);
   var vs=r.veg?vegStamp(true):null;
-  if(img){var iw=el("div","rimg"),im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){iw.remove();hero.classList.add("solo");if(vs)hero.appendChild(vs)};iw.appendChild(im);if(vs)iw.appendChild(vs);hero.appendChild(iw)}
+  if(img){var iw=el("div","rimg"),im=document.createElement("img");im.alt=r.name;im.src=img;im.onerror=function(){iw.remove();hero.classList.add("solo");if(vs)hero.appendChild(vs)};iw.appendChild(im);if(vs)iw.appendChild(vs);if(r.ia){var qb=el("button","iaq","IA?");qb.type="button";qb.setAttribute("aria-expanded","false");var bl=el("p","iabulle",iaTxt(r.ia));bl.hidden=true;qb.onclick=function(e){e.stopPropagation();bl.hidden=!bl.hidden;qb.setAttribute("aria-expanded",!bl.hidden)};iw.appendChild(qb);iw.appendChild(bl)}hero.appendChild(iw)}
   else if(vs)hero.appendChild(vs);
   box.appendChild(hero);
   var pills=el("div","rpills");
