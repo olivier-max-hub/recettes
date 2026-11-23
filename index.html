@@ -94,6 +94,9 @@ header .wrap{position:relative}
 .catb small{font-size:1rem}
 .catb .ill{font-size:3.4rem;line-height:1;flex:none}
 .catb:focus-visible{outline:3px solid #0b4f59;outline-offset:2px}
+/* bandeau « Bientôt disponible » en diagonale (bas-gauche → haut-droite) sur les rubriques pas encore prêtes */
+.catb.bientot{position:relative;overflow:hidden}
+.catb.bientot::after{content:"Bientôt disponible";position:absolute;left:-20%;right:-20%;top:50%;transform:translateY(-50%) rotate(-12deg);background:rgba(15,107,120,.62);color:#fff;font-weight:800;font-size:1.05rem;line-height:1;padding:8px 0;text-align:center;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.45);pointer-events:none;z-index:3}
 .backbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
 .cwrap{flex:1;min-width:0;display:flex;justify-content:center}
 .cpill{flex:1;max-width:100%;text-align:center;font-size:1.4rem;line-height:1.15;color:#0b4f59;padding:8px 18px;border-radius:99px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
@@ -195,7 +198,7 @@ body.view-eq main,body.view-eq #q,body.view-eq #chips,body.view-eq .sub{display:
 .eqwarn{max-width:640px;margin:0 auto 6px;background:#fff8e1;border:2px solid #e0c25a;border-radius:18px;padding:12px 16px}
 .eqwarn b{display:block;font-size:1.15rem;color:#7a5600}
 .eqwarn p{margin:4px 0 0}
-h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.6rem}
+h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.3rem;line-height:1.2}
 .eqmenu{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;max-width:640px;margin:0 auto}
 .eqrow{display:flex;gap:8px;align-items:center}
 .eqt{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:96px;padding:14px 22px;border-radius:24px;text-decoration:none;color:#0b4f59;box-shadow:0 3px 10px rgba(0,0,0,.12)}
@@ -360,7 +363,7 @@ function renderEq(){var box=$("eqp");box.textContent="";
   var av=el("div","eqwarn");av.appendChild(el("b",null,"⚠️ Outil indicatif, sans valeur médicale"));
   av.appendChild(el("p",null,"Les calories affichées sont des estimations calculées automatiquement à partir des ingrédients de chaque recette et de valeurs moyennes. Elles t’aident seulement à évaluer ce que tu es susceptible de manger par plat ou par repas. Elles ne remplacent pas l’avis d’un médecin ou d’un·e diététicien·ne."));
   box.appendChild(av);
-  box.appendChild(el("h3","eqh","Mon menu"));
+  box.appendChild(el("h3","eqh","Compose ton menu en fonction du nombre de calories indiqué"));
   var mn=el("div","eqmenu"),sum=0,nb=0,sans=0;
   COURSES.forEach(function(C,i){var row=el("div","eqrow"),tile=el("a","eqt");tile.href="#menu-"+C[0];var p=PAL[[0,4,1,5][i]];tile.style.background="linear-gradient(135deg,"+TR(p[0])+","+TR(p[1])+")";
     var ch=menu[C[0]],r=ch&&recipes.filter(function(x){return x.slug===ch.slug})[0],tx=el("span");
@@ -383,7 +386,7 @@ function renderEq(){var box=$("eqp");box.textContent="";
   inf.appendChild(el("p",null,"Ces chiffres concernent la journée entière (tous les repas) et sont des moyennes générales : les besoins varient selon l’âge, la taille, l’activité physique… Ce sont des conseils, pas des règles strictes. L’appli ne te demande aucune donnée personnelle et ne fait aucune recommandation personnalisée."));
   var src=el("p","src","Source : "),la=el("a",null,"Vidal – Recommandations nutritionnelles chez l’adulte");la.href="https://www.vidal.fr/sante/nutrition/equilibre-alimentaire-adulte/recommandations-nutritionnelles-adulte.html";la.target="_blank";la.rel="noopener";src.appendChild(la);src.appendChild(document.createTextNode(" (d’après les apports nutritionnels conseillés de l’AFSSA, devenue ANSES)."));inf.appendChild(src);
   box.appendChild(inf)}
-function pickBar(){var C=course(pick.c),d=el("div","backbar"),a=el("a","btn alt","← Mon menu");a.href="#equilibre";var w=el("div","cwrap"),t=el("b","cpill","Choisis : "+C[1]);t.style.background="linear-gradient(135deg,#cdeccb,#9fd89a)";w.appendChild(t);d.appendChild(a);d.appendChild(w);return d}
+function pickBar(){var C=course(pick.c),d=el("div","backbar"),a=el("a","btn alt","← Retour au menu");a.href="#equilibre";var w=el("div","cwrap"),t=el("b","cpill","Choisis : "+C[1]);t.style.background="linear-gradient(135deg,#cdeccb,#9fd89a)";w.appendChild(t);d.appendChild(a);d.appendChild(w);return d}
 function pickUpdate(){var bar=$("pickgo");if(!pick){bar.textContent="";return}
   var r=pick.sel&&recipes.filter(function(x){return x.slug===pick.sel})[0];bar.textContent="";
   var ok=el("button","btn vbtn",r?"✓ Valider : "+r.name:"Touche une recette pour la choisir");ok.type="button";ok.disabled=!r;ok.onclick=function(){if(r)choisir(r)};bar.appendChild(ok);
@@ -396,6 +399,7 @@ function renderChips(){var names=catList().map(function(c){return c.name}),cats=
   function chip(c){var b=document.createElement("button");b.className="chip"+(isGaspi(c)?" chipgaspi":"");b.textContent=(isGaspi(c)?"♻️ ":"")+c;b.setAttribute("aria-pressed",c===cat);b.onclick=function(){if(c!=="Tout")track("categorie",c);cat=c;renderChips();renderList();toTop()};box.appendChild(b)}
   /* même ordre que les tuiles : Tout, 30 minutes chrono, Équilibre alimentaire, Anti gaspi, puis les catégories */
   chip("Tout");
+  [["✅ Recettes possibles","possibles","#d9d0f5"],["🤏 Presque prêtes","presque","#ffe0b3"]].forEach(function(x){var l=document.createElement("a");l.className="chip";l.href=FRISCAN+"#"+x[1];l.textContent=x[0];l.style.background=x[2];l.style.textDecoration="none";l.style.fontWeight="700";l.style.color="#0b4f59";l.style.borderColor=x[2];box.appendChild(l)});
   var chb=document.createElement("button");chb.className="chip chipchrono";chb.textContent="⏱️ "+CHRONO;chb.setAttribute("aria-pressed",cat===CHRONO);chb.onclick=function(){location.hash="chrono"};box.appendChild(chb);
   var eq=document.createElement("button");eq.className="chip chipeq";eq.textContent="⚖️ Équilibre alimentaire";eq.onclick=function(){location.hash="equilibre"};box.appendChild(eq);
   names.filter(isGaspi).concat(names.filter(function(c){return!isGaspi(c)})).forEach(chip)}
@@ -824,9 +828,14 @@ function renderCats(box){var nav=document.createElement("nav");nav.className="ca
   var ct=document.createElement("span"),cb=document.createElement("b");cb.textContent=CHRONO;var cs=document.createElement("small");cs.textContent=rapides?rapides.length+(rapides.length>1?" recettes rapides":" recette rapide"):"Des recettes rapides, prêtes en 30 minutes";ct.appendChild(cb);ct.appendChild(cs);
   var ci2=document.createElement("span");ci2.className="ill";ci2.textContent="⏱️";ci2.setAttribute("aria-hidden","true");ch.appendChild(ct);ch.appendChild(ci2);
   /* ordre voulu par Olivier (15/11/2026) : 30 minutes chrono, Équilibre alimentaire, Anti gaspi, puis les catégories */
+  /* « Des recettes testées » (accueil) arrive ici : recettes possibles et presque prêtes d'après tes réserves (ouvertes dans « Mes réserves ») */
+  [["Recettes possibles","Ce que tu peux cuisiner avec ce que tu as dans tes réserves","possibles","✅",["#d9d0f5","#b9a8ee"]],["Presque prêtes","Il ne te manque qu’un ou deux ingrédients","presque","🤏",["#ffe0b3","#fbc16b"]]].forEach(function(x){
+    var a=document.createElement("a");a.className="catb";a.href=FRISCAN+"#"+x[2];a.style.background="linear-gradient(135deg,"+TR(x[4][0])+","+TR(x[4][1])+")";
+    var t=document.createElement("span"),b=document.createElement("b");b.textContent=x[0];var sm=document.createElement("small");sm.textContent=x[1];t.appendChild(b);t.appendChild(sm);
+    var ill=document.createElement("span");ill.className="ill";ill.textContent=x[3];ill.setAttribute("aria-hidden","true");a.appendChild(t);a.appendChild(ill);nav.appendChild(a)});
   nav.appendChild(ch);nav.appendChild(eq);
   var cl=catList().map(function(c,i){return{c:c,i:i}});
-  cl.filter(function(x){return isGaspi(x.c.name)}).concat(cl.filter(function(x){return!isGaspi(x.c.name)})).forEach(function(x){var c=x.c,i=x.i;var a=document.createElement("a");a.className="catb";a.href="#categorie-"+slug(c.name);var p=catPal(c.name,i);a.style.background="linear-gradient(135deg,"+TR(p[0])+","+TR(p[1])+")";
+  cl.filter(function(x){return isGaspi(x.c.name)}).concat(cl.filter(function(x){return!isGaspi(x.c.name)})).forEach(function(x){var c=x.c,i=x.i;var a=document.createElement("a");a.className="catb"+(isGaspi(c.name)?" bientot":"");a.href="#categorie-"+slug(c.name);var p=catPal(c.name,i);a.style.background="linear-gradient(135deg,"+TR(p[0])+","+TR(p[1])+")";
     var t=document.createElement("span");var b=document.createElement("b");b.textContent=c.name;var sm=document.createElement("small");sm.textContent=c.n?c.n+(c.n>1?" recettes":" recette"):(isGaspi(c.name)?"Recettes et idées pour ne rien gaspiller, bientôt ici":"Bientôt des recettes");t.appendChild(b);t.appendChild(sm);
     var ill=document.createElement("span");ill.className="ill";ill.textContent=catIcon(c.name);ill.setAttribute("aria-hidden","true");
     a.appendChild(t);a.appendChild(ill);nav.appendChild(a)});
