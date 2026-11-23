@@ -81,7 +81,7 @@ var ALIM=[
  A(/noix de pecan|pecan/,700,{p:4}),
  A(/saint[- ]jacques|st[- ]jacques/,90,{p:30}),
  A(/\bnoix\b(?! de (?:muscade|beurre|margarine))/,690,{cs:7,p:5}),
- A(/pignons?/,680,{cs:10}),
+ A(/\bpignons?/,680,{cs:10}), /* \b : « champignons » contient « pignons » */
  A(/pistaches?/,600,{cs:10}),
  A(/cacahuetes?|arachides?/,600,{cs:10}),
  A(/graines? de (?:sesame|lin|courge|tournesol|chia|pavot)|\bsesame/,580,{cs:9}),
