@@ -105,7 +105,8 @@ A(/\blevure\b(?! chimique)/,100,{u:{sachet:10}}),
  A(/\bpains?\b/,260,{p:250,u:{tranche:35}}),
  A(/gnocchis?/,150,{u:{paquet:500}}),
  A(/ravioli|tortellini|raviole/,250,{u:{paquet:250}}),
- A(/\b(?:pates|spaghettis?|tagliatelles?|penne|macaronis?|coquillettes|fusilli|farfalles?|linguine|nouilles|vermicelles?|lasagnes?|conchiglie|orzo|rigatoni)\b/,355,{u:{paquet:500,feuille:20}}),
+ A(/bechamel/,120,{cs:15}),
+A(/\b(?:pates|spaghettis?|tagliatelles?|penne|macaronis?|coquillettes|fusilli|farfalles?|linguine|nouilles|vermicelles?|lasagnes?|cannellonis?|conchiglie|orzo|rigatoni)\b/,355,{u:{paquet:500,feuille:20,tube:10,tubes:10}}),
  A(/\briz\b/,350,{d:.85}),
  A(/semoule|couscous|boulgour|quinoa|polenta|\bebly|\bble\b/,360,{d:.75}),
  A(/pois chiches? secs|haricots? secs/,340,{d:.8}),
@@ -260,7 +261,7 @@ function kcLigne(t){
   if(pm)per=mass(pm[1],pm[2]);
   var pg=null,pp=paren.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes|cl|ml|l)\b/g);
   if(pp){var lm=pp[pp.length-1].match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes|cl|ml|l)\b/);pg=mass(lm[1],lm[2])}
-  var total=/soit|total|en tout/.test(paren),g=null,ml=null;
+  var total=/soit|total|en tout|environ/.test(paren)&&!/chacun|piece|par /.test(paren),g=null,ml=null;
   if(q==null){if(pg!=null&&!u){g=pg}else if(u){q=1}else{o.st="nq";return o}}
   if(g==null){
     if(KC_GR[u])g=q*KC_GR[u];

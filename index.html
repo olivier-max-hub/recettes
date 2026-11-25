@@ -271,7 +271,7 @@ h3.eqh{max-width:640px;margin:18px auto 10px;color:var(--acc);font-size:1.3rem;l
 <a class="chef chef-f" id="toqueF" href="#commentaire" draggable="false" hidden><svg viewBox='0 0 100 100' aria-hidden='true' focusable='false'><g stroke='#0f6b78' stroke-width='3' stroke-linejoin='round'><circle cx='30' cy='27' r='16' fill='#fff'/><circle cx='50' cy='19' r='19' fill='#fff'/><circle cx='70' cy='27' r='16' fill='#fff'/><circle cx='50' cy='66' r='28' fill='#fbd9b5'/><rect x='25' y='36' width='50' height='14' rx='5' fill='#d9f0f3'/></g><circle cx='40' cy='65' r='3.2' fill='#1f2a24'/><circle cx='60' cy='65' r='3.2' fill='#1f2a24'/><circle cx='33' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><circle cx='67' cy='73' r='4' fill='#f6a6a0' opacity='.75'/><path d='M38 75Q50 89 62 75' fill='none' stroke='#1f2a24' stroke-width='3' stroke-linecap='round'/></svg><span>Commentaire</span></a>
 <div id="toast" role="status"></div>
 <script src="../cookapli/budget.js?v=3"></script>
-<script src="calories.js?v=5"></script>
+<script src="calories.js?v=6"></script>
 <script src="../cookapli/filtres.js?v=3"></script>
 <script src="../cookapli/batch.js?v=1"></script>
 <script src="../cookapli/saison.js?v=2"></script>
@@ -617,7 +617,7 @@ function loadFiches(){
 /* ---------- liste de courses Cookapli (même site : stockage partagé avec Friscan et Cookapli) ---------- */
 var ckIngP=null;
 function ckLoadING(cb){if(typeof ING!=="undefined")return cb();
-  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=21";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  if(!ckIngP)ckIngP=new Promise(function(ok,ko){var s=document.createElement("script");s.src="../friscan/data.js?v=22";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
   ckIngP.then(cb,function(){cb()})}
 function ckNorm(t){return " "+String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/œ/g,"oe").replace(/[^a-z0-9]+/g," ").trim()+" "}
 function ckGuess(t){if(typeof ING==="undefined")return null;var txt=ckNorm(t),best=null,bi=1e9,bl=0;
