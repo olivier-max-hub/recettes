@@ -252,6 +252,8 @@ function kcLigne(t){
   for(var i=0;i<KC_UNITS.length;i++){if((um=after.match(KC_UNITS[i][1]))){u=KC_UNITS[i][0]==="*"?kcUnit(um[0]):KC_UNITS[i][0];after=after.slice(um[0].length).trim();break}}
   var per=null,pm=u&&!KC_GR[u]&&!KC_ML[u]&&u!=="cs"&&u!=="cc"?after.match(/^(?:de |d')?\s*(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes|cl|ml|l)\b/):null;
   if(pm){after=after.slice(pm[0].length).trim()}
+  /* « 4 pavés de saumon de 150 g chacun » : poids unitaire donné après l'aliment */
+  if(!pm&&!KC_GR[u]&&!KC_ML[u]&&u!=="cs"&&u!=="cc"){var pm2=after.match(/\bde\s+(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes)\s+(?:chacun|chacune|piece|l'un|l'une)\b/);if(pm2)pm=[pm2[0],pm2[1],pm2[2]]}
   after=after.replace(/^(?:de la |de l'|des |du |de |d')\s*/,"");
   var f=kcFood(after)||kcFood((before+" "+after).trim())||kcFood(s);
   if(!f){o.st=q==null?"nq":"inconnu";return o}
@@ -270,6 +272,7 @@ function kcLigne(t){
     else if(u==="filet"){if(uu.filet)g=q*uu.filet;else ml=q*5}
     else if(u){g=pg!=null?(total?pg:q*pg):q*(per||uu[u]||KC_DEFU[u]||30)}
     else if(pg!=null)g=total?pg:q*pg;
+    else if(per)g=q*per;
     else if(f.p&&f.p<10&&q>=50)g=q;  /* « 150 noix » : 150 g */
     else if(f.p)g=q*f.p;
     else if(q>=20)g=q;
