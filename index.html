@@ -331,6 +331,9 @@ var AVERT_KCAL="Estimation indicative, sans aucune valeur médicale : les calori
 var BU={};
 /* profil « Petit budget » (id antigaspi) : les recettes les moins chères d'abord */
 var PETIT_BUDGET=(function(){try{var a=JSON.parse(localStorage.getItem("cookapli.accueil")||"null");return!!(a&&a.profil==="antigaspi")}catch(e){return false}})();
+/* profil « Équilibre alimentaire » : de la moins calorique à la plus calorique */
+var EQUILIBRE=(function(){try{var a=JSON.parse(localStorage.getItem("cookapli.accueil")||"null");return!!(a&&a.profil==="equilibre")}catch(e){return false}})();
+function kcLivre(r){var k=kcalRecette(r);return k&&k.pp?k.pp:Infinity}
 function saisonDabord(L,txt){if(!window.CookSaison)return L;L.forEach(function(x){var s=CookSaison.ok(txt(x));x._s=s;if(x.l)x.l._s=s});return L.filter(function(x){return x._s}).concat(L.filter(function(x){return !x._s}))}
 function ppLivre(r){var b=budgetRecette(r);return b&&b.pp?b.pp:Infinity}
 function budgetRecette(r){if(typeof CookBudget==="undefined"||!CookBudget.pret()||typeof ING==="undefined")return null;
@@ -440,11 +443,11 @@ function renderList(){var box=$("list");box.textContent="";
   var items=recipes.filter(function(r){return(cat==="Tout"||r.cat===cat)&&okL(r)&&(!q||srch(r.name+" "+r.type+" "+r.region).indexOf(q)>=0)});
   if(!items.length){var p=document.createElement("p");p.className="msg";p.textContent=isGaspi(cat)&&!query.trim()?"Cette rubrique accueillera bientôt des recettes et des idées anti-gaspi":"Aucune recette ne correspond.";box.appendChild(p);return}
   /* choix pour le menu Équilibre alimentaire : de la moins calorique à la plus calorique, recettes sans calories à la fin */
-  if(pick){var kv=function(r){var k=kcalRecette(r);return k&&k.pp?k.pp:Infinity};items=items.slice().sort(function(a,b){return kv(a)-kv(b)});
+  if(pick||EQUILIBRE){items=items.slice().sort(function(a,b){return kcLivre(a)-kcLivre(b)});
     box.appendChild(el("p","picksort","Classées de la moins à la plus calorique"))}
   else if(PETIT_BUDGET){items=items.slice().sort(function(a,b){return ppLivre(a)-ppLivre(b)});box.appendChild(el("p","picksort","Petit budget : de la moins chère à la plus chère"))}
   /* recettes de saison d'abord (l'ordre ci-dessus est gardé dans chaque groupe) */
-  items=saisonDabord(items,function(r){return CookSaison.texteFiche(r.name,fiches[r.slug])});
+  if(!pick&&!EQUILIBRE)items=saisonDabord(items,function(r){return CookSaison.texteFiche(r.name,fiches[r.slug])});
   var groups={},order=[];items.forEach(function(r){var k=cat==="Tout"?"":r.cat;if(!groups[k]){groups[k]=[];order.push(k)}groups[k].push(r)});
   order.forEach(function(c){
     var g=document.createElement("div");g.className="grid";
@@ -801,8 +804,10 @@ function renderChrono(box){
     .sort(function(a,b){return a.min-b.min||a.n.localeCompare(b.n,"fr")});
   if(PETIT_BUDGET){var ppR=function(it){if(it.l)return ppLivre(it.l);var bf=it.f.ing&&typeof ING!=="undefined"&&typeof CookBudget!=="undefined"&&CookBudget.pret()?CookBudget.recetteFriscan(it.f,ING):null;return bf&&bf.pp?bf.pp:Infinity};
     items.forEach(function(it){it.pp=ppR(it)});items.sort(function(a,b){return a.pp-b.pp||a.min-b.min})}
-  items=saisonDabord(items,function(it){return it.l?CookSaison.texteFiche(it.l.name,fiches[it.l.slug]):CookSaison.texteRapide(it.f,typeof ING!=="undefined"?ING:null)});
-  box.appendChild(el("p","picksort",(PETIT_BUDGET?"Petit budget : de la moins chère à la plus chère. ":"")+"Des recettes prêtes en 30 minutes au maximum, préparation et cuisson comprises : celles du Livre et les recettes rapides de Cookapli, qui s’ouvrent dans « Mes réserves »."));
+  else if(EQUILIBRE){var kcR=function(it){if(it.l)return kcLivre(it.l);var k=it.f.ing&&typeof ING!=="undefined"&&typeof CookBudget!=="undefined"&&CookBudget.kcalFriscan?CookBudget.kcalFriscan(it.f,ING):null;return k||Infinity};
+    items.forEach(function(it){it.kc=kcR(it)});items.sort(function(a,b){return a.kc-b.kc||a.min-b.min})}
+  if(!EQUILIBRE)items=saisonDabord(items,function(it){return it.l?CookSaison.texteFiche(it.l.name,fiches[it.l.slug]):CookSaison.texteRapide(it.f,typeof ING!=="undefined"?ING:null)});
+  box.appendChild(el("p","picksort",(PETIT_BUDGET?"Petit budget : de la moins chère à la plus chère. ":EQUILIBRE?"Classées de la moins à la plus calorique. ":"")+"Des recettes prêtes en 30 minutes au maximum, préparation et cuisson comprises : celles du Livre et les recettes rapides de Cookapli, qui s’ouvrent dans « Mes réserves »."));
   if(!rapides&&!items.length){box.appendChild(el("p","msg","Chargement des recettes rapides…"));return}
   if(!items.length){box.appendChild(el("p","msg","Aucune recette ne correspond."));return}
   var g=el("div","grid");
