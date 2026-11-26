@@ -110,6 +110,7 @@ A(/\b(?:pates|spaghettis?|tagliatelles?|penne|macaronis?|coquillettes|fusilli|fa
  A(/\briz\b/,350,{d:.85}),
  A(/semoule|couscous|boulgour|quinoa|polenta|\bebly|\bble\b/,360,{d:.75}),
  A(/pois chiches? secs|haricots? secs/,340,{d:.8}),
+ A(/lentilles?(?: \w+)? cuites?/,116,{d:.8}),
  A(/lentilles?|pois casses/,330,{d:.8}),
  A(/pois chiches?|haricots? (?:rouges|blancs|noirs|coco|tarbais)|flageolets?|\bfeves?\b/,120,{u:{boite:265,bocal:265}}),
  A(/petits? pois/,80,{u:{boite:280}}),
