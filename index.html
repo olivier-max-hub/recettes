@@ -303,7 +303,7 @@ function csv(t){var rows=[],r=[],f="",q=false;for(var i=0;i<t.length;i++){var c=
 function imgCol(r){for(var i=5;i<r.length;i++)if(/\.(jpe?g|png|webp|gif)\s*$/i.test(r[i]||""))return r[i].trim();return""}
 function iaCol(r){for(var i=5;i<r.length;i++){var x=(r[i]||"").trim();if(/^(rl\s*\/\s*ia|ia)$/i.test(x))return /rl/i.test(x)?"rl":"ia"}return""}
 var IA_RL="L’image du plat est réelle, l’environnement est créé par l’IA.";
-function iaTxt(k){return k==="rl"?IA_RL:"Photo d’illustration créée par IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle."}
+function iaTxt(k){return k==="rl"?IA_RL:"Photo d’illustration créée avec l’aide de l’IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle."}
 function parse(rows){var out=[],cur="";rows.slice(5).forEach(function(row){var name=(row[2]||"").trim();if(!name)return;var c=(row[1]||"").trim()||cur;cur=c;var type=(row[3]||"").trim();
   /* « Plat », « Plat unique » et « Plat unique Végétarien » forment une seule rubrique « Plat » ; la mention végétarien est gardée à part */
   var veg=/vegetarien|vegan|(^|-)vege(-|$)/.test(slug(c)+"-"+slug(type)+"-"+slug(name));if(/^plat(-|$)/.test(slug(c)))c="Plat";
@@ -780,7 +780,7 @@ function isGaspi(c){return /anti-?gaspi/.test(slug(c||""))}
 function catPal(name,i){return name===CHRONO?PAL_CHRONO:isGaspi(name)?PAL_GASPI:PAL[i%PAL.length]}
 /* ===== 30 minutes chrono : recettes du Livre prêtes en 30 min + recettes rapides validées de Friscan (friscan/data.js, champ ok, ouvertes dans Friscan) ===== */
 var CHRONO="30 minutes chrono",PAL_CHRONO=["#c9e1fb","#9cc6f2"],rapides=null,FRISCAN="../friscan/";
-var IA_TXT="Photo d’illustration créée par IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle.";
+var IA_TXT="Photo d’illustration créée avec l’aide de l’IA, en attendant une vraie photo du plat. La recette, elle, est bien réelle.";
 try{var rc=JSON.parse(localStorage.getItem("recettes-rapides")||"null");if(rc&&rc.length)rapides=rc}catch(e){}
 function loadRapides(){fetch(FRISCAN+"data.js?t="+Date.now()).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
   var d=new Function(t+";return {R:RECETTES,C:CATS}")();
