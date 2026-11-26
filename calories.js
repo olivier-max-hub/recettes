@@ -161,6 +161,7 @@ A(/\b(?:pates|spaghettis?|tagliatelles?|penne|macaronis?|coquillettes|fusilli|fa
  A(/carottes?/,36,{p:100}),
  A(/courgettes?/,16,{p:250}),
  A(/aubergines?/,20,{p:300}),
+ A(/mini[- ]poivrons?/,30,{p:40}),
  A(/poivrons?/,30,{p:150}),
  A(/concombres?/,12,{p:300}),
  A(/avocats?/,200,{p:150}),
